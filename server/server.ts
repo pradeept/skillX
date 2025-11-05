@@ -1,5 +1,4 @@
-configDotenv(); // to use .env variables
-import { configDotenv } from "dotenv";
+import "dotenv/config"
 import express from "express";
 import { authRouter } from "./src/routes/authRouter.ts";
 import { errorHandler } from "./src/middlewares/errorHandler.ts";

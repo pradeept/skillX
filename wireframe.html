@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSwap Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+            font-size: 32px;
+        }
+        .wireframe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .wireframe {
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .wireframe-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+            color: #6366f1;
+        }
+        .wireframe-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9fafb;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .nav-logo {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .nav-items {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+        }
+        .box {
+            border: 2px dashed #999;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .box-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .input {
+            width: 100%;
+            height: 35px;
+            border: 1px solid #ddd;
+            background: white;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .textarea {
+            width: 100%;
+            height: 60px;
+            border: 1px solid #ddd;
+            background: white;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .button {
+            width: 100%;
+            padding: 12px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 8px 0;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .button-secondary {
+            background: white;
+            color: #6366f1;
+            border: 2px solid #6366f1;
+        }
+        .card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: white;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .card-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .card-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #e0e7ff;
+            color: #6366f1;
+            border-radius: 12px;
+            font-size: 11px;
+            margin: 3px;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .star-rating {
+            color: #fbbf24;
+            font-size: 14px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: #ddd;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+            background: white;
+        }
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .tab-active {
+            background: #6366f1;
+            color: white;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 10px 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 SkillSwap Platform - Wireframes</h1>
+        
+        <!-- Row 1: Auth Pages -->
+        <div class="wireframe-grid">
+            <!-- Login Page -->
+            <div class="wireframe">
+                <div class="wireframe-title">1. Login Page</div>
+                <div class="box">
+                    <div class="box-label">LOGO + TAGLINE</div>
+                    <div style="text-align: center; padding: 20px 0;">
+                        <strong>SkillSwap</strong><br>
+                        <small>Learn & Teach Skills</small>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box-label">LOGIN FORM</div>
+                    <div class="input"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">Email</div>
+                    <div class="input"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">Password</div>
+                    <button class="button">Login</button>
+                </div>
+                <div style="text-align: center; margin-top: 15px; font-size: 14px;">
+                    Don't have an account? <strong style="color: #6366f1;">Sign Up</strong>
+                </div>
+            </div>
+
+            <!-- Signup Page -->
+            <div class="wireframe">
+                <div class="wireframe-title">2. Signup Page</div>
+                <div class="box">
+                    <div class="box-label">SIGNUP FORM</div>
+                    <div class="input"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">Full Name</div>
+                    <div class="input"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">Email</div>
+                    <div class="input"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">Password</div>
+                    <div class="input"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">Confirm Password</div>
+                    <button class="button">Create Account</button>
+                </div>
+                <div style="text-align: center; margin-top: 15px; font-size: 14px;">
+                    Already have an account? <strong style="color: #6366f1;">Login</strong>
+                </div>
+            </div>
+
+            <!-- Create Profile Page -->
+            <div class="wireframe">
+                <div class="wireframe-title">3. Create Profile (After Signup)</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">SkillSwap</div>
+                    <div>Setup Profile</div>
+                </div>
+                <div class="box">
+                    <div class="box-label">PROFILE PICTURE</div>
+                    <div style="text-align: center;">
+                        <div class="avatar" style="width: 80px; height: 80px; margin: 10px auto;"></div>
+                        <button class="button button-secondary">Upload Photo</button>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box-label">BIO</div>
+                    <div class="textarea"></div>
+                    <div style="font-size: 11px; color: #666;">Tell others about yourself</div>
+                </div>
+                <div class="section-title">Skills I Can Teach</div>
+                <div class="box">
+                    <div class="badge">Web Development ×</div>
+                    <div class="badge">Photography ×</div>
+                    <button class="button button-secondary">+ Add Skill</button>
+                </div>
+                <div class="section-title">Skills I Want to Learn</div>
+                <div class="box">
+                    <div class="badge badge-warning">Guitar ×</div>
+                    <div class="badge badge-warning">Spanish ×</div>
+                    <button class="button button-secondary">+ Add Skill</button>
+                </div>
+                <button class="button">Complete Profile</button>
+            </div>
+        </div>
+
+        <!-- Row 2: Main Pages -->
+        <div class="wireframe-grid">
+            <!-- Dashboard/Home -->
+            <div class="wireframe">
+                <div class="wireframe-title">4. Dashboard (Home Page)</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">SkillSwap</div>
+                    <div class="nav-items">
+                        <div>Browse</div>
+                        <div>Sessions</div>
+                        <div>Requests (2)</div>
+                        <div>Profile</div>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box-label">WELCOME BANNER</div>
+                    <div style="padding: 15px;">
+                        <strong>Welcome back, Alex!</strong><br>
+                        <small>You have 2 pending requests</small>
+                    </div>
+                </div>
+                <div class="section-title">Quick Actions</div>
+                <div class="grid-2">
+                    <button class="button">Browse Skills</button>
+                    <button class="button button-secondary">My Profile</button>
+                </div>
+                <div class="section-title">Upcoming Sessions (2)</div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Guitar Lesson with Marcus</div>
+                        <div class="badge badge-success">Tomorrow</div>
+                    </div>
+                    <div class="card-meta">3:00 PM - 4:00 PM</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Spanish Tutoring with Sarah</div>
+                        <div class="badge badge-success">Friday</div>
+                    </div>
+                    <div class="card-meta">10:00 AM - 11:00 AM</div>
+                </div>
+            </div>
+
+            <!-- Browse Skills -->
+            <div class="wireframe">
+                <div class="wireframe-title">5. Browse Skills Page</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">SkillSwap</div>
+                    <div class="nav-items">
+                        <div><strong>Browse</strong></div>
+                        <div>Sessions</div>
+                        <div>Requests</div>
+                        <div>Profile</div>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box-label">SEARCH & FILTER</div>
+                    <input class="search-bar" placeholder="Search skills..." />
+                    <div style="margin-top: 10px;">
+                        <div class="badge">All</div>
+                        <div class="badge">Tech</div>
+                        <div class="badge">Arts</div>
+                        <div class="badge">Music</div>
+                        <div class="badge">Language</div>
+                    </div>
+                </div>
+                <div class="section-title">Available Teachers</div>
+                <div class="card">
+                    <div class="user-info">
+                        <div class="avatar"></div>
+                        <div>
+                            <div class="card-title">Sarah Chen</div>
+                            <div class="card-meta">Teaches: Spanish</div>
+                            <div class="star-rating">★★★★★ 4.9 (47 reviews)</div>
+                        </div>
+                    </div>
+                    <button class="button button-secondary">View Profile</button>
+                </div>
+                <div class="card">
+                    <div class="user-info">
+                        <div class="avatar"></div>
+                        <div>
+                            <div class="card-title">Marcus Johnson</div>
+                            <div class="card-meta">Teaches: Guitar</div>
+                            <div class="star-rating">★★★★☆ 4.7 (63 reviews)</div>
+                        </div>
+                    </div>
+                    <button class="button button-secondary">View Profile</button>
+                </div>
+            </div>
+
+            <!-- User Profile (Other User) -->
+            <div class="wireframe">
+                <div class="wireframe-title">6. User Profile Page</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">← Back</div>
+                    <div class="nav-items">Profile</div>
+                </div>
+                <div class="box">
+                    <div class="user-info" style="margin-bottom: 15px;">
+                        <div class="avatar" style="width: 70px; height: 70px;"></div>
+                        <div>
+                            <div style="font-size: 20px; font-weight: 600;">Sarah Chen</div>
+                            <div class="star-rating" style="font-size: 16px;">★★★★★ 4.9</div>
+                            <div class="card-meta">47 sessions completed</div>
+                        </div>
+                    </div>
+                    <button class="button">Request Session</button>
+                </div>
+                <div class="section-title">About</div>
+                <div class="box">
+                    <div style="font-size: 13px; line-height: 1.6;">
+                        Native Spanish speaker with 5 years of teaching experience. Love helping beginners!
+                    </div>
+                </div>
+                <div class="section-title">Skills Offered</div>
+                <div class="box">
+                    <div class="badge">Spanish</div>
+                    <div class="badge">Cooking</div>
+                </div>
+                <div class="section-title">Skills Wanted</div>
+                <div class="box">
+                    <div class="badge badge-warning">Photography</div>
+                    <div class="badge badge-warning">Web Development</div>
+                </div>
+                <div class="section-title">Recent Reviews</div>
+                <div class="card">
+                    <div class="star-rating">★★★★★</div>
+                    <div style="font-size: 13px; margin: 8px 0; line-height: 1.5;">
+                        "Excellent teacher! Very patient with beginners."
+                    </div>
+                    <div class="card-meta">- Alex, 2 days ago</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Request & Session Pages -->
+        <div class="wireframe-grid">
+            <!-- Request Session Modal/Page -->
+            <div class="wireframe">
+                <div class="wireframe-title">7. Request Session (Modal)</div>
+                <div class="box">
+                    <div class="box-label">REQUEST SESSION WITH SARAH</div>
+                    <div class="section-title" style="margin-top: 10px;">Select Skill</div>
+                    <div class="input"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">Skill you want to learn</div>
+                    
+                    <div class="section-title">Proposed Date & Time</div>
+                    <div class="grid-2">
+                        <div>
+                            <div class="input"></div>
+                            <div style="font-size: 11px; color: #666; margin: 5px 0;">Date</div>
+                        </div>
+                        <div>
+                            <div class="input"></div>
+                            <div style="font-size: 11px; color: #666; margin: 5px 0;">Time</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Message (Optional)</div>
+                    <div class="textarea"></div>
+                    <div style="font-size: 11px; color: #666;">Introduce yourself...</div>
+                    
+                    <div style="margin-top: 15px;">
+                        <button class="button">Send Request</button>
+                        <button class="button button-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incoming Requests -->
+            <div class="wireframe">
+                <div class="wireframe-title">8. Incoming Requests</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">SkillSwap</div>
+                    <div class="nav-items">
+                        <div>Browse</div>
+                        <div>Sessions</div>
+                        <div><strong>Requests (2)</strong></div>
+                        <div>Profile</div>
+                    </div>
+                </div>
+                <div class="section-title">Pending Requests</div>
+                <div class="card">
+                    <div class="user-info">
+                        <div class="avatar"></div>
+                        <div>
+                            <div class="card-title">Marcus Johnson</div>
+                            <div class="card-meta">Wants to learn: Photography</div>
+                        </div>
+                    </div>
+                    <div style="margin: 10px 0; font-size: 13px; color: #666;">
+                        📅 Proposed: Tomorrow, 3:00 PM<br>
+                        💬 "Hi! I'm a beginner, would love to learn basics."
+                    </div>
+                    <div class="grid-2">
+                        <button class="button" style="background: #059669;">Accept</button>
+                        <button class="button button-secondary" style="border-color: #dc2626; color: #dc2626;">Decline</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="user-info">
+                        <div class="avatar"></div>
+                        <div>
+                            <div class="card-title">David Park</div>
+                            <div class="card-meta">Wants to learn: Web Development</div>
+                        </div>
+                    </div>
+                    <div style="margin: 10px 0; font-size: 13px; color: #666;">
+                        📅 Proposed: Friday, 10:00 AM
+                    </div>
+                    <div class="grid-2">
+                        <button class="button" style="background: #059669;">Accept</button>
+                        <button class="button button-secondary" style="border-color: #dc2626; color: #dc2626;">Decline</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Sessions -->
+            <div class="wireframe">
+                <div class="wireframe-title">9. My Sessions</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">SkillSwap</div>
+                    <div class="nav-items">
+                        <div>Browse</div>
+                        <div><strong>Sessions</strong></div>
+                        <div>Requests</div>
+                        <div>Profile</div>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <button class="tab tab-active">Upcoming</button>
+                    <button class="tab">Past</button>
+                    <button class="tab">Need Review</button>
+                </div>
+                <div class="section-title">Upcoming Sessions (2)</div>
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Guitar Lesson</div>
+                            <div class="card-meta">with Marcus Johnson</div>
+                        </div>
+                        <div class="badge badge-success">Tomorrow</div>
+                    </div>
+                    <div style="margin: 10px 0; font-size: 13px;">
+                        📅 Tomorrow, 3:00 PM - 4:00 PM
+                    </div>
+                    <div class="grid-2">
+                        <button class="button button-secondary">View Details</button>
+                        <button class="button" style="background: #059669;">Mark Complete</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Spanish Tutoring</div>
+                            <div class="card-meta">with Sarah Chen</div>
+                        </div>
+                        <div class="badge badge-success">Friday</div>
+                    </div>
+                    <div style="margin: 10px 0; font-size: 13px;">
+                        📅 Friday, 10:00 AM - 11:00 AM
+                    </div>
+                    <button class="button button-secondary">View Details</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 4: Review & Profile Pages -->
+        <div class="wireframe-grid">
+            <!-- Leave Review -->
+            <div class="wireframe">
+                <div class="wireframe-title">10. Leave Review</div>
+                <div class="box">
+                    <div class="box-label">REVIEW SESSION</div>
+                    <div class="user-info" style="margin-bottom: 20px;">
+                        <div class="avatar"></div>
+                        <div>
+                            <div class="card-title">Session with Sarah Chen</div>
+                            <div class="card-meta">Spanish Lesson • Oct 20, 2025</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Rating</div>
+                    <div style="text-align: center; padding: 15px 0;">
+                        <div class="star-rating" style="font-size: 36px;">
+                            ★ ★ ★ ★ ★
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                            Click to rate
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Your Review</div>
+                    <div class="textarea" style="height: 100px;"></div>
+                    <div style="font-size: 11px; color: #666; margin: 5px 0;">
+                        Share your experience (optional)
+                    </div>
+                    
+                    <button class="button" style="margin-top: 15px;">Submit Review</button>
+                    <button class="button button-secondary">Skip for Now</button>
+                </div>
+            </div>
+
+            <!-- My Profile (Edit) -->
+            <div class="wireframe">
+                <div class="wireframe-title">11. My Profile (Edit Mode)</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">SkillSwap</div>
+                    <div class="nav-items">
+                        <div>Browse</div>
+                        <div>Sessions</div>
+                        <div>Requests</div>
+                        <div><strong>Profile</strong></div>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="user-info" style="margin-bottom: 15px;">
+                        <div class="avatar" style="width: 70px; height: 70px;"></div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 20px; font-weight: 600;">Alex Rivera</div>
+                            <div class="star-rating" style="font-size: 16px;">★★★★★ 4.8</div>
+                            <div class="card-meta">24 sessions completed</div>
+                        </div>
+                    </div>
+                    <button class="button button-secondary">Change Photo</button>
+                </div>
+                <div class="section-title">Bio</div>
+                <div class="box">
+                    <div class="textarea"></div>
+                    <div style="font-size: 11px; color: #666;">Tell others about yourself</div>
+                </div>
+                <div class="section-title">Skills I Can Teach</div>
+                <div class="box">
+                    <div class="badge">Web Development ×</div>
+                    <div class="badge">Photography ×</div>
+                    <div class="badge">UI/UX Design ×</div>
+                    <button class="button button-secondary">+ Add Skill</button>
+                </div>
+                <div class="section-title">Skills I Want to Learn</div>
+                <div class="box">
+                    <div class="badge badge-warning">Guitar ×</div>
+                    <div class="badge badge-warning">Spanish ×</div>
+                    <div class="badge badge-warning">Cooking ×</div>
+                    <button class="button button-secondary">+ Add Skill</button>
+                </div>
+                <button class="button">Save Changes</button>
+            </div>
+
+            <!-- Session Details -->
+            <div class="wireframe">
+                <div class="wireframe-title">12. Session Details Page</div>
+                <div class="wireframe-nav">
+                    <div class="nav-logo">← Back to Sessions</div>
+                </div>
+                <div class="box">
+                    <div class="box-label">SESSION INFORMATION</div>
+                    <div style="padding: 15px;">
+                        <div class="section-title" style="margin-top: 0;">Guitar Lesson</div>
+                        <div class="card-meta" style="margin-bottom: 20px;">Session ID: #12345</div>
+                        
+                        <div style="margin: 15px 0;">
+                            <strong>Teacher:</strong> Marcus Johnson<br>
+                            <strong>Learner:</strong> You (Alex Rivera)
+                        </div>
+                        
+                        <div style="margin: 15px 0;">
+                            <strong>📅 Date:</strong> Tomorrow<br>
+                            <strong>🕐 Time:</strong> 3:00 PM - 4:00 PM<br>
+                            <strong>⏱️ Duration:</strong> 1 hour
+                        </div>
+                        
+                        <div style="margin: 15px 0;">
+                            <strong>Status:</strong> <span class="badge badge-success">Confirmed</span>
+                        </div>
+                        
+                        <div style="margin: 15px 0;">
+                            <strong>📝 Notes:</strong><br>
+                            <div style="font-size: 13px; color: #666; margin-top: 5px;">
+                                "Hi! I'm a beginner, would love to learn basic chords."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-title">Actions</div>
+                <button class="button" style="background: #059669;">Mark as Complete</button>
+                <button class="button button-secondary">Request Reschedule</button>
+                <button class="button button-secondary" style="border-color: #dc2626; color: #dc2626;">Cancel Session</button>
+            </div>
+        </div>
+
+        <!-- Additional Info Section -->
+        <div style="background: white; border: 2px solid #6366f1; border-radius: 8px; padding: 30px; margin-top: 40px;">
+            <h2 style="color: #6366f1; margin-bottom: 20px; font-size: 24px;">📋 Wireframe Flow Summary</h2>
+            
+            <div style="line-height: 2;">
+                <strong>1. Authentication Flow:</strong><br>
+                → Login Page → Dashboard<br>
+                → Signup Page → Create Profile → Dashboard<br><br>
+
+                <strong>2. Browse & Request Flow:</strong><br>
+                → Dashboard → Browse Skills → User Profile → Request Session Modal → Confirmation<br><br>
+
+                <strong>3. Receive Request Flow:</strong><br>
+                → Dashboard → Incoming Requests → Accept/Decline → Session Created<br><br>
+
+                <strong>4. Session Management Flow:</strong><br>
+                → My Sessions → Session Details → Mark Complete → Leave Review<br><br>
+
+                <strong>5. Profile Management Flow:</strong><br>
+                → Dashboard → My Profile → Edit Profile → Save Changes
+            </div>
+        </div>
+
+        <!-- Key Components List -->
+        <div style="background: white; border: 2px solid #059669; border-radius: 8px; padding: 30px; margin-top: 30px;">
+            <h2 style="color: #059669; margin-bottom: 20px; font-size: 24px;">🧩 Key UI Components to Build</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div>
+                    <strong style="color: #6366f1;">Reusable Components:</strong>
+                    <ul style="margin-top: 10px; padding-left: 20px; line-height: 2;">
+                        <li>Navbar</li>
+                        <li>UserCard</li>
+                        <li>SessionCard</li>
+                        <li>RequestCard</li>
+                        <li>SkillBadge</li>
+                        <li>StarRating</li>
+                        <li>Modal/Dialog</li>
+                        <li>Button (Primary/Secondary)</li>
+                        <li>Input/Textarea</li>
+                        <li>Avatar</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <strong style="color: #6366f1;">Pages (Next.js Routes):</strong>
+                    <ul style="margin-top: 10px; padding-left: 20px; line-height: 2;">
+                        <li>/login</li>
+                        <li>/signup</li>
+                        <li>/profile/setup</li>
+                        <li>/dashboard (home)</li>
+                        <li>/browse</li>
+                        <li>/users/[id]</li>
+                        <li>/sessions</li>
+                        <li>/sessions/[id]</li>
+                        <li>/requests</li>
+                        <li>/profile</li>
+                        <li>/profile/edit</li>
+                        <li>/reviews/[sessionId]</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <strong style="color: #6366f1;">States to Manage:</strong>
+                    <ul style="margin-top: 10px; padding-left: 20px; line-height: 2;">
+                        <li>User authentication</li>
+                        <li>User profile data</li>
+                        <li>Session list</li>
+                        <li>Request list</li>
+                        <li>Selected user/session</li>
+                        <li>Modal open/close</li>
+                        <li>Form data</li>
+                        <li>Loading states</li>
+                        <li>Error messages</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Notes -->
+        <div style="background: #fef3c7; border: 2px solid #d97706; border-radius: 8px; padding: 30px; margin-top: 30px; margin-bottom: 30px;">
+            <h2 style="color: #92400e; margin-bottom: 20px; font-size: 24px;">💡 Design Notes</h2>
+            
+            <div style="line-height: 2; color: #78350f;">
+                <strong>Color Scheme:</strong><br>
+                • Primary: #6366f1 (Indigo/Purple)<br>
+                • Success: #059669 (Green)<br>
+                • Warning: #d97706 (Orange)<br>
+                • Danger: #dc2626 (Red)<br>
+                • Neutral: Gray scale<br><br>
+
+                <strong>Typography:</strong><br>
+                • Headings: Bold, 20-32px<br>
+                • Body: Regular, 14-16px<br>
+                • Meta/Labels: 11-13px<br><br>
+
+                <strong>Spacing:</strong><br>
+                • Cards: 15-20px padding<br>
+                • Sections: 20-30px margins<br>
+                • Grid gaps: 10-30px<br><br>
+
+                <strong>Interactive Elements:</strong><br>
+                • All buttons have hover states<br>
+                • Cards have subtle shadows<br>
+                • Badges for status indicators<br>
+                • Icons for better UX (Calendar, Star, Message)<br><br>
+
+                <strong>Responsive Design:</strong><br>
+                • Mobile: Single column layout<br>
+                • Tablet: 2 column grid<br>
+                • Desktop: 3 column grid<br>
+                • Hamburger menu on mobile
+            </div>
+        </div>
+    </div>
+</body>
+</html>
