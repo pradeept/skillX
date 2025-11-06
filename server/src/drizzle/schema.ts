@@ -30,10 +30,10 @@ const timestamps = {
 export const User = pgTable("users", {
   id: uuid().primaryKey().defaultRandom(),
   full_name: varchar({ length: 50 }).notNull(),
-  email: varchar({ length: 50 }).notNull().unique(),
+  email: varchar({ length: 100 }).notNull().unique(),
   password_hash: varchar({ length: 255 }).notNull(),
   bio: varchar({ length: 200 }),
-  avatar_url: varchar({ length: 50 }).default(
+  avatar_url: varchar({ length: 255 }).default(
     "https://cdn-icons-png.flaticon.com/512/847/847969.png"
   ),
 
@@ -138,3 +138,8 @@ export const Review = pgTable(
   },
   (table) => [unique().on(table.session_id, table.reviewer_id)]
 ); //one review per person
+
+
+// --- Points ---
+
+// -- Triggers --
