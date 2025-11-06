@@ -74,3 +74,67 @@ export const UserSkill = pgTable(
   },
   (table) => [unique().on(table.skill_id, table.user_id, table.type)]
 );
+
+// --- Session ---
+
+export const statusEnum = pgEnum("status", [
+  "accepted",
+  "declined",
+  "cancelled",
+  "pending",
+]);
+
+export const SessionRequest = pgTable("session_request", {
+  id: uuid().primaryKey().defaultRandom(),
+  requester_id: uuid()
+    .references(() => User.id)
+    .notNull(),
+  provider_id: uuid()
+    .references(() => User.id)
+    .notNull(),
+  schedule: timestamp().notNull(),
+
+  requester_message: varchar({ length: 255 }),
+
+  status: statusEnum("status").default("pending").notNull(),
+  provider_message: varchar({ length: 255 }),
+  ...timestamps,
+});
+
+export const sessionStatusEnum = pgEnum("session_status", [
+  "scheduled",
+  "completed",
+  "cancelled",
+]);
+
+// when provider accepts / cancels / declains => will save in session table
+
+export const Session = pgTable("session", {
+  id: uuid().primaryKey().defaultRandom(),
+  requester_id: uuid()
+    .references(() => User.id)
+    .notNull(),
+  provider_id: uuid()
+    .references(() => User.id)
+    .notNull(),
+  session_status: sessionStatusEnum("session_status").notNull(),
+  duration_minutes: smallint().default(60),
+  completed_at: timestamp().notNull(),
+});
+
+// --- Review ---
+
+export const ratingEnum = pgEnum("rating", ["0", "1", "2", "3", "4", "5"]);
+
+export const Review = pgTable(
+  "review",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    session_id: uuid().references(() => Session.id),
+    reviewee_id: uuid().references(() => User.id),
+    reviewer_id: uuid().references(() => User.id),
+    rating: ratingEnum().default("0").notNull(),
+    comment: varchar({ length: 50 }),
+  },
+  (table) => [unique().on(table.session_id, table.reviewer_id)]
+); //one review per person
