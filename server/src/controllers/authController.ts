@@ -1,8 +1,15 @@
 import { type NextFunction, type Request, type Response } from "express";
 import { AppError } from "../utils/AppError.ts";
 import { loginSchema, registerSchema } from "../validators/auth.schema.ts";
+import * as authService from "../services/authService.ts";
+import { generateToken } from "../utils/generateToken.ts";
+import { comparePassword, hashPassword } from "../utils/hash.ts";
 
-export const login = (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const body = req.body;
 
   //zod validation and errors handled by global error handler
@@ -11,18 +18,66 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
   }
 
   // parse will throw a ZodError by default
-  const validatedBody = loginSchema.parse(body)
+  const validatedBody = loginSchema.parse(body);
 
-  // database logic goes here
+  // service call
+  const user = await authService.findUserByEmail(validatedBody.email);
 
-  return res.status(200).json({
-    status: "success",
-    message: "Login Successful",
-    token: "jwttoken",
-  });
+  if (!user) {
+    return next(new AppError("Invalid Email or Password", 401));
+  } else {
+    const {
+      id,
+      email,
+      full_name,
+      password_hash,
+      bio,
+      avatar_url,
+      total_lessons_learned,
+      total_lessons_taught,
+      points,
+      level,
+    } = user;
+
+    const isPasswordValid = await comparePassword(
+      validatedBody.password,
+      password_hash
+    );
+
+    if (isPasswordValid) {
+      // generate and assign token
+      const token = generateToken({
+        id,
+        email: email,
+        password_hash: password_hash,
+      });
+      res.cookie("token", token);
+      return res.status(200).json({
+        status: "success",
+        message: "Login Successful",
+        user: {
+          email,
+          full_name,
+          bio,
+          avatar_url,
+          total_lessons_learned,
+          total_lessons_taught,
+          points,
+          level,
+        },
+        token,
+      });
+    } else {
+      return next(new AppError("Invalid Email or Password", 401));
+    }
+  }
 };
 
-export const register = (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const body = req.body; // x-www-form-urlencoded
 
   //zod validation and errors handled by global error handler
@@ -33,10 +88,17 @@ export const register = (req: Request, res: Response, next: NextFunction) => {
   // parse will throw a ZodError by default
   const validatedBody = registerSchema.parse(body);
 
-  // database logic goes here
-
-  return res.status(200).json({
-    status: "success",
-    message: "You have hit /register successfully",
+  const password_hash = await hashPassword(validatedBody.password);
+  const newUser = await authService.createNewUser({
+    email: validatedBody.email,
+    password_hash,
+    full_name: validatedBody.fullname,
   });
+
+  if (newUser) {
+    return res.status(200).json({
+      status: "success",
+      message: "Registration successful",
+    });
+  }
 };
