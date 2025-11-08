@@ -48,10 +48,15 @@ export const login = async (
       // generate and assign token
       const token = generateToken({
         id,
-        email: email,
-        password_hash: password_hash,
+        email,
+        full_name,
       });
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        maxAge: 3600000, //1hr
+        sameSite: "strict",
+        httpOnly: true, //only accessible by web servers
+        secure: process.env.NODE_ENV === "production", //only https
+      });
       return res.status(200).json({
         status: "success",
         message: "Login Successful",
@@ -89,6 +94,10 @@ export const register = async (
   const validatedBody = registerSchema.parse(body);
 
   const password_hash = await hashPassword(validatedBody.password);
+  const isUserExist = await authService.findUserByEmail(validatedBody.email);
+  if (isUserExist) {
+    return next(new AppError("Email already exists", 400));
+  }
   const newUser = await authService.createNewUser({
     email: validatedBody.email,
     password_hash,
