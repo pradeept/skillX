@@ -11,7 +11,7 @@ export const errorHandler: ErrorRequestHandler = (
   // defaults
   let statusCode = 500;
   let status = "error";
-  let message = "Internal Server Error";
+  let message = "Internal Server Error. The issue has been reported.";
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;
