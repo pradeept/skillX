@@ -15,6 +15,7 @@ export const loginSchema = z.object({
     ),
 });
 
+// extends loginSchema
 export const registerSchema = loginSchema.extend({  
   fullname: z
     .string()

@@ -3,6 +3,7 @@ import express from "express";
 import { authRouter } from "./src/routes/authRouter.ts";
 import { errorHandler } from "./src/middlewares/errorHandler.ts";
 import cookieParser from "cookie-parser";
+import { profileRouter } from "./src/routes/profileRouter.ts";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // routes
 app.use("/api/auth", authRouter);
+app.use("/api/profile", profileRouter);
 
 app.use(errorHandler); //error handler
 
