@@ -1,17 +1,11 @@
 import { type NextFunction, type Request, type Response } from "express";
 import { AppError } from "../utils/AppError.ts";
-import {
-  deleteUserAccount,
-  findUserById,
-  getUserDetails,
-  updateUserDetails,
-} from "../services/profileService.ts";
+import * as profileService  from "../services/profileService.ts";
 import {
   deleteProfileSchema,
   updateProfileSchema,
 } from "../validators/profile.schema.ts";
-import type { UserType } from "../types/schema.types.ts";
-import z from "zod";
+
 
 /*
     @Params: id
@@ -25,7 +19,7 @@ export const getProfile = async (
 ) => {
   const data = req.data;
   const email = data.email;
-  const user = await getUserDetails(email);
+  const user = await profileService.getUserDetails(email);
 
   if (!user) {
     return next(new AppError("User not found", 404));
@@ -56,12 +50,12 @@ export const updateProfile = async (
   //zod validation
   const validatedBody = updateProfileSchema.parse(data);
 
-  const isUserExist = await findUserById(data.id);
+  const isUserExist = await profileService.findUserById(data.id);
 
   if (!isUserExist) {
     return next(new AppError("User not found", 404));
   } else {
-    const updatedUser = await updateUserDetails({
+    const updatedUser = await profileService.updateUserDetails({
       id: validatedBody.id,
       full_name: validatedBody.fullName,
       bio: validatedBody.bio,
@@ -83,7 +77,7 @@ export const deleteProfile = async (
   const data = req.data;
   const validatedBody = deleteProfileSchema.parse(data);
 
-  const deletedUser = await deleteUserAccount(validatedBody.id);
+  const deletedUser = await profileService.deleteUserAccount(validatedBody.id);
   if (deletedUser) {
     // Invalidate Token (require architecture change)
     return res.status(200).json({
