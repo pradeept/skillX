@@ -1,12 +1,17 @@
 import { type NextFunction, type Request, type Response } from "express";
 import { AppError } from "../utils/AppError.ts";
 import {
+  deleteUserAccount,
   findUserById,
   getUserDetails,
   updateUserDetails,
 } from "../services/profileService.ts";
-import { updateProfileSchema } from "../validators/profile.schema.ts";
+import {
+  deleteProfileSchema,
+  updateProfileSchema,
+} from "../validators/profile.schema.ts";
 import type { UserType } from "../types/schema.types.ts";
+import z from "zod";
 
 /*
     @Params: id
@@ -46,7 +51,7 @@ export const updateProfile = async (
   res: Response,
   next: NextFunction
 ) => {
-  const data = req.body;
+  const data = req.data;
 
   //zod validation
   const validatedBody = updateProfileSchema.parse(data);
@@ -58,9 +63,9 @@ export const updateProfile = async (
   } else {
     const updatedUser = await updateUserDetails({
       id: validatedBody.id,
-      full_name: validatedBody.full_name,
+      full_name: validatedBody.fullName,
       bio: validatedBody.bio,
-      avatar_url: validatedBody.avatar_url,
+      avatar_url: validatedBody.avatarUrl,
     });
     if (updatedUser) {
       return res.status(200).json({
@@ -71,6 +76,19 @@ export const updateProfile = async (
   }
 };
 
-/*
-- add deleteuser controller.
-*/
+export const deleteProfile = async (
+  req: Request & { data?: any },
+  res: Response
+) => {
+  const data = req.data;
+  const validatedBody = deleteProfileSchema.parse(data);
+
+  const deletedUser = await deleteUserAccount(validatedBody.id);
+  if (deletedUser) {
+    // Invalidate Token (require architecture change)
+    return res.status(200).json({
+      status: "success",
+      message: "Profile deleted successfully",
+    });
+  }
+};

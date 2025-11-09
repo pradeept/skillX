@@ -33,6 +33,7 @@ export const login = async (
       password_hash,
       bio,
       avatar_url,
+      account_status,
       total_lessons_learned,
       total_lessons_taught,
       points,
@@ -44,7 +45,7 @@ export const login = async (
       password_hash
     );
 
-    if (isPasswordValid) {
+    if (isPasswordValid && account_status === 'active') {
       // generate and assign token
       const token = generateToken({
         id,
