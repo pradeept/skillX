@@ -13,7 +13,6 @@ export const verifyToken = (token: string) => {
   try {
     payload = jwt.verify(token, process.env.JWT_SECRET as string);
   } catch (err) {
-    console.log(err);
-  }
+ console.error("Token verification failed:", err instanceof Error ? err.message : "Unknown error");  }
   return payload ?? null;
 };

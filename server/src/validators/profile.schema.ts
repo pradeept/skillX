@@ -5,7 +5,7 @@ export const updateProfileSchema = z.object({
   email: z.email({ message: "Provide Valid Email" }),
   full_name: z.string("fullname is required").trim().min(3).max(40),
   bio: z.string("bio is required").trim().max(400),
-  avatar_url: z.string("avatar url is required").trim().max(255),
+  avatar_url: z.string().trim().url("Provide a valid URL").max(255),
   total_lessons_learned: z.number().max(1000).optional(),
   total_lessons_taught: z.number().max(1000).optional(),
   points: z.number().max(10000).optional(),
