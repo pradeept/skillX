@@ -30,4 +30,12 @@ export const updateUserDetails = async (data: Partial<UserType>) => {
   return updatedUser[0];
 };
 
-export const deleteUserAccount = async () => {};
+export const deleteUserAccount = async (id: string) => {
+  const userId = id;
+  const deletedUser = await db
+    .update(User)
+    .set({ account_status: "suspended" })
+    .where(eq(User.id, userId))
+    .returning({ id: User.id });
+  return deletedUser[0];
+};

@@ -1,12 +1,11 @@
 import { type NextFunction, type Request, type Response } from "express";
 import { AppError } from "../utils/AppError.ts";
+import * as profileService  from "../services/profileService.ts";
 import {
-  findUserById,
-  getUserDetails,
-  updateUserDetails,
-} from "../services/profileService.ts";
-import { updateProfileSchema } from "../validators/profile.schema.ts";
-import type { UserType } from "../types/schema.types.ts";
+  deleteProfileSchema,
+  updateProfileSchema,
+} from "../validators/profile.schema.ts";
+
 
 /*
     @Params: id
@@ -20,7 +19,7 @@ export const getProfile = async (
 ) => {
   const data = req.data;
   const email = data.email;
-  const user = await getUserDetails(email);
+  const user = await profileService.getUserDetails(email);
 
   if (!user) {
     return next(new AppError("User not found", 404));
@@ -46,21 +45,21 @@ export const updateProfile = async (
   res: Response,
   next: NextFunction
 ) => {
-  const data = req.body;
+  const data = req.data;
 
   //zod validation
   const validatedBody = updateProfileSchema.parse(data);
 
-  const isUserExist = await findUserById(data.id);
+  const isUserExist = await profileService.findUserById(data.id);
 
   if (!isUserExist) {
     return next(new AppError("User not found", 404));
   } else {
-    const updatedUser = await updateUserDetails({
+    const updatedUser = await profileService.updateUserDetails({
       id: validatedBody.id,
-      full_name: validatedBody.full_name,
+      full_name: validatedBody.fullName,
       bio: validatedBody.bio,
-      avatar_url: validatedBody.avatar_url,
+      avatar_url: validatedBody.avatarUrl,
     });
     if (updatedUser) {
       return res.status(200).json({
@@ -71,6 +70,19 @@ export const updateProfile = async (
   }
 };
 
-/*
-- add deleteuser controller.
-*/
+export const deleteProfile = async (
+  req: Request & { data?: any },
+  res: Response
+) => {
+  const data = req.data;
+  const validatedBody = deleteProfileSchema.parse(data);
+
+  const deletedUser = await profileService.deleteUserAccount(validatedBody.id);
+  if (deletedUser) {
+    // Invalidate Token (require architecture change)
+    return res.status(200).json({
+      status: "success",
+      message: "Profile deleted successfully",
+    });
+  }
+};
