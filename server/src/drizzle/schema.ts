@@ -139,7 +139,27 @@ export const Review = pgTable(
   (table) => [unique().on(table.session_id, table.reviewer_id)]
 ); //one review per person
 
-
 // --- Points ---
 
+export const transactionTypeEnum = pgEnum("transaction_type", [
+  "credit",
+  "debit",
+]);
+
+export const transactionReson = pgEnum("reason", [
+  "session_completed",
+  "signup_bonus",
+  "review_given",
+]);
+export const PointsTransaction = pgTable("points_transaction", {
+  id: uuid().primaryKey().defaultRandom(),
+  user_id: uuid().references(() => User.id),
+  transaction_type: transactionTypeEnum("transaction_type").notNull(),
+  reason: transactionReson("reason").notNull(),
+  amount: smallint().notNull(),
+});
+
 // -- Triggers --
+
+// function and trigger to update lessons_learned and lessons_taught 
+// after a session is completed
