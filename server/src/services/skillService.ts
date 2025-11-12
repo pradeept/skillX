@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { Skill, SkillCategory, User, UserSkill } from "../drizzle/schema.ts";
 import { db } from "../drizzle/db.ts";
 
@@ -19,41 +19,41 @@ export const getUserSkills = async (id: string) => {
 };
 
 // find if a skill exists in skills table (not to confuse user_skills)
-export const findOneSkill = async (skillName: string) => {
-  const skill = await db
-    .select()
-    .from(Skill)
-    .where(eq(Skill.skill_name, skillName));
-  if (skill.length > 0) {
-    return skill[0];
-  } else {
-    return false;
-  }
+export const findSkills = async (skills: string[]) => {
+  const existingSkills = await db.transaction(async (tx) => {
+    return await tx
+      .select()
+      .from(Skill)
+      .where(inArray(Skill.skill_name, skills));
+  });
+  return existingSkills;
 };
 
-export const addOneSkill = async (skillName: string, categoryId: string) => {
-  const newSkill = await db
-    .insert(Skill)
-    .values({
-      skill_name: skillName,
-      category_id: categoryId,
-    })
-    .returning({ id: Skill.id, skillName: Skill.skill_name });
-  return newSkill[0]?.id;
+export const addNewSkills = async (
+  skills: {
+    user_id: string;
+    skill_name: string;
+    category_id: string;
+  }[]
+) => {
+  const newSkills = await db.transaction(async (tx) => {
+    return await tx.insert(Skill).values(skills).returning();
+  });
+  return newSkills;
 };
 
 export const addNewUserSkill = async (
-  skillId: string,
-  userId: string,
-  type: "offering" | "wanting"
+  newUserSkills: {
+    user_id: string;
+    skill_id: string;
+    type: "offering" | "wanting";
+  }[]
 ) => {
-  const newUserSkill = await db
-    .insert(UserSkill)
-    .values({
-      user_id: userId,
-      skill_id: skillId,
-      type,
-    })
-    .returning({ id: UserSkill.id });
-  return newUserSkill[0];
+  return await db.transaction(async (tx) => {
+    return await tx
+      .insert(UserSkill)
+      .values(newUserSkills)
+      .onConflictDoNothing()
+      .returning();
+  });
 };

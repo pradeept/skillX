@@ -1,7 +1,7 @@
 import z from "zod";
 import * as skillService from "../services/skillService.ts";
 import { type NextFunction, type Request, type Response } from "express";
-import { addSkillSchema } from "../validators/skill.schema.ts";
+import { addOrUpdateSkillSchema } from "../validators/skill.schema.ts";
 import { AppError } from "../utils/AppError.ts";
 
 export const getSkill = async (
@@ -24,49 +24,97 @@ export const getSkill = async (
   });
 };
 
-export const addSkill = async (
+export const addOrUpdateSkill = async (
   req: Request & { data?: any },
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.data;
+  const data = req.data;
   const body = req.body;
-  const validatedUserId = z.uuid().parse(id);
+  const validatedUserId = z.uuid().parse(data.id);
 
-  const validatedBody = addSkillSchema.parse(body);
+  const validatedBody = addOrUpdateSkillSchema.parse(body);
 
-  const newSkills = validatedBody.skills.map(async (skill) => {
-    const isSkillExists = await skillService.findOneSkill(skill.skill_name);
-    if (isSkillExists) return { skillId: isSkillExists.id };
-    else {
-      const newSkillId = await skillService.addOneSkill(
-        skill.skill_name,
-        skill.category_id
-      );
-      return { skillId: newSkillId };
-    }
-  });
+  try {
+    // extract skill names
+    const skillNames = validatedBody.skills.map((skill) => skill.skill_name);
 
-  const resolvedSkills = await Promise.all(newSkills);
-
-  const userSkills = resolvedSkills.map(async (skill) => {
-    return skillService.addNewUserSkill(
-      skill.skillId!,
-      validatedUserId,
-      validatedBody.type
+    // find existing skills in "skills" table
+    const existingSkills = (await skillService.findSkills(skillNames)).map(
+      (skill) => ({
+        user_id: validatedUserId,
+        skill_id: skill.id,
+        skill_name: skill.skill_name,
+        type: validatedBody.type,
+      })
     );
-  });
 
-  const resolvedCreations = await Promise.all(userSkills);
+    // find new skills that needs to be added to "skills" table
+    const newSkillNames = skillNames.filter(
+      (skill) => !existingSkills.map((s) => s.skill_name).includes(skill)
+    );
 
-  if (resolvedCreations.some((creation) => creation === undefined)) {
+
+    let newSkills;
+    // format and add non existing skills to "skills" table
+    if (newSkillNames.length > 0) {
+      const formatedNewSkills = newSkillNames.map((skill) => {
+        return {
+          skill_name: skill,
+          category_id:
+            validatedBody.skills.find((s) => s.skill_name === skill)
+              ?.category_id ?? "746b22f3-7f75-4c95-b69c-e1c4e98ff349", //unknown category_id
+          user_id: validatedUserId,
+        };
+      });
+
+      newSkills = (await skillService.addNewSkills(formatedNewSkills)).map(
+        (skill) => {
+          return {
+            skill_name: skill,
+            skill_id: skill.id,
+            category_id: skill.category_id,
+            user_id: validatedUserId,
+            type: validatedBody.type,
+          };
+        }
+      );
+    }
+
+    // add or update both existing and newly added skills to "user_skills" table
+    let newUserSkills;
+    if (newSkills) {
+      newUserSkills = await skillService.addNewUserSkill([
+        ...existingSkills.map((s) => ({
+          user_id: s.user_id,
+          skill_id: s.skill_id,
+          type: s.type,
+        })),
+        ...newSkills,
+      ]);
+    } else {
+      newUserSkills = await skillService.addNewUserSkill(
+        existingSkills.map((s) => ({
+          user_id: s.user_id,
+          skill_id: s.skill_id,
+          type: s.type,
+        }))
+      );
+    }
+
+    if (newUserSkills.length > 0) {
+      console.log("User skills updated successfully");
+      return res.status(200).json({
+        status: "success",
+        message: "Skills updated successfully",
+      });
+    } else {
+      console.log("Failed to add user_skills");
+      return next(new AppError("Failed to update skills", 500));
+    }
+  } catch (e) {
+    console.error(e);
     return next(new AppError("Failed to update skills", 500));
-  } else {
-    return res.status(200).json({
-      status: "success",
-      message: "Skills updated successfully",
-    });
   }
 };
 
-export const updateSkill = async () => {};

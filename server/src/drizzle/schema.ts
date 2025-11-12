@@ -58,7 +58,7 @@ export const SkillCategory = pgTable("skill_category", {
 
 export const Skill = pgTable("skills", {
   id: uuid().primaryKey().defaultRandom(),
-  skill_name: varchar({ length: 20 }).notNull(),
+  skill_name: varchar({ length: 20 }).notNull().unique(),
   category_id: uuid().references(() => SkillCategory.id),
 });
 
@@ -68,8 +68,8 @@ export const UserSkill = pgTable(
   "user_skills",
   {
     id: uuid().primaryKey().defaultRandom(),
-    user_id: uuid().references(() => User.id),
-    skill_id: uuid().references(() => Skill.id),
+    user_id: uuid().references(() => User.id).notNull(),
+    skill_id: uuid().references(() => Skill.id).notNull(),
     type: skillTypeEnum("type").notNull(),
   },
   (table) => [unique().on(table.skill_id, table.user_id, table.type)]
@@ -146,7 +146,7 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "debit",
 ]);
 
-export const transactionReson = pgEnum("reason", [
+export const transactionReason = pgEnum("reason", [
   "session_completed",
   "signup_bonus",
   "review_given",
@@ -155,7 +155,7 @@ export const PointsTransaction = pgTable("points_transaction", {
   id: uuid().primaryKey().defaultRandom(),
   user_id: uuid().references(() => User.id),
   transaction_type: transactionTypeEnum("transaction_type").notNull(),
-  reason: transactionReson("reason").notNull(),
+  reason: transactionReason("reason").notNull(),
   amount: smallint().notNull(),
 });
 

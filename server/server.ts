@@ -4,6 +4,7 @@ import { authRouter } from "./src/routes/authRouter.ts";
 import { errorHandler } from "./src/middlewares/errorHandler.ts";
 import cookieParser from "cookie-parser";
 import { profileRouter } from "./src/routes/profileRouter.ts";
+import { skillRouter } from "./src/routes/skillRouter.ts";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 // routes
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
+app.use('/api/skill', skillRouter)
 
 app.use(errorHandler); //error handler
 
