@@ -15,6 +15,20 @@
       "when": 1762437528767,
       "tag": "0001_calm_malcolm_colcord",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762947913916,
+      "tag": "0002_nosy_kree",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1762953036465,
+      "tag": "0003_tearful_ezekiel",
+      "breakpoints": true
     }
   ]
 }
