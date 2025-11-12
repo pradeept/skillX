@@ -153,7 +153,7 @@ export const transactionReason = pgEnum("reason", [
 ]);
 export const PointsTransaction = pgTable("points_transaction", {
   id: uuid().primaryKey().defaultRandom(),
-  user_id: uuid().references(() => User.id),
+  user_id: uuid().references(() => User.id).notNull(),
   transaction_type: transactionTypeEnum("transaction_type").notNull(),
   reason: transactionReason("reason").notNull(),
   amount: smallint().notNull(),

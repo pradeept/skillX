@@ -4,6 +4,8 @@ import { type NextFunction, type Request, type Response } from "express";
 import { addOrUpdateSkillSchema } from "../validators/skill.schema.ts";
 import { AppError } from "../utils/AppError.ts";
 
+const UNKNOWN_CATEGORY_ID = "746b22f3-7f75-4c95-b69c-e1c4e98ff349"
+
 export const getSkill = async (
   req: Request & { data?: any },
   res: Response
@@ -63,7 +65,7 @@ export const addOrUpdateSkill = async (
           skill_name: skill,
           category_id:
             validatedBody.skills.find((s) => s.skill_name === skill)
-              ?.category_id ?? "746b22f3-7f75-4c95-b69c-e1c4e98ff349", //unknown category_id
+              ?.category_id ?? UNKNOWN_CATEGORY_ID, //unknown category_id
           user_id: validatedUserId,
         };
       });
@@ -71,7 +73,7 @@ export const addOrUpdateSkill = async (
       newSkills = (await skillService.addNewSkills(formatedNewSkills)).map(
         (skill) => {
           return {
-            skill_name: skill,
+            skill_name: skill.skill_name,
             skill_id: skill.id,
             category_id: skill.category_id,
             user_id: validatedUserId,
