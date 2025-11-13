@@ -1,10 +1,13 @@
-import "dotenv/config"
+import "dotenv/config";
 import express from "express";
 import { authRouter } from "./src/routes/authRouter.ts";
 import { errorHandler } from "./src/middlewares/errorHandler.ts";
 import cookieParser from "cookie-parser";
 import { profileRouter } from "./src/routes/profileRouter.ts";
 import { skillRouter } from "./src/routes/skillRouter.ts";
+import { getRedisClient } from "./src/configs/redis.ts";
+import notificationSocket from "./src/configs/socket.ts";
+import http from "http";
 
 const app = express();
 
@@ -12,13 +15,29 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// initialize redis
+const rc = await getRedisClient();
+if (!rc) console.error("Redis is not connected");
+
+// initialize socket
+const server = http.createServer(app);
+
+// attach notification socket logic to the HTTP server
+const notificationMiddleware = await notificationSocket(server);
+app.use(notificationMiddleware);
+
 // routes
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
-app.use('/api/skill', skillRouter)
+app.use("/api/skill", skillRouter);
 
 app.use(errorHandler); //error handler
 
-app.listen(process.env.PORT, () => {
+/*
+why not app.listen ?
+app.listen uses = http.createServer(app) under the hood
+and socket.io requires http server instance.
+*/
+server.listen(process.env.PORT, () => {
   console.log(`Listenting on port: ${process.env.PORT}`);
 });

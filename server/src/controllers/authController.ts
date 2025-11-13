@@ -45,7 +45,7 @@ export const login = async (
       password_hash
     );
 
-    if (isPasswordValid && account_status === 'active') {
+    if (isPasswordValid && account_status === "active") {
       // generate and assign token
       const token = generateToken({
         id,

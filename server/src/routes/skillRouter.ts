@@ -1,9 +1,5 @@
 import { Router } from "express";
-import {
-  addOrUpdateSkill,
-  getSkill,
-  updateSkill,
-} from "../controllers/skillController.ts";
+import { addOrUpdateSkill, getSkill } from "../controllers/skillController.ts";
 import { isAuthorized } from "../middlewares/authorize.ts";
 export const skillRouter = Router();
 
