@@ -11,15 +11,10 @@ export class NotificationService {
   //3. before 15 minutes to join the session video conference
   // 4. after completion of session for review.
   pushToUser(
-    notificationNamespace: Namespace<
-      DefaultEventsMap,
-      DefaultEventsMap,
-      DefaultEventsMap,
-      any
-    >,
+    notify: (userId: string, message: string) => boolean,
     userId: string,
     message: string
   ) {
-    notificationNamespace.to(`user:${userId}`).emit("notification", message);
+    notify(userId, message);
   }
 }

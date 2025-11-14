@@ -52,9 +52,19 @@ export default async function notificationSocket(
     });
   });
 
+  const notify = async (userId: string, message: string)=>{
+    const isUserOnline = await redis.get(`user:${userId}`);
+    if(isUserOnline){
+      notificationNamespace.to(`user:${userId}`).emit("notification", message);
+      return true;
+    }else{
+      return false;
+    }
+  }
+
   // return middleware-like function that adds the helper to app
   const middleware: RequestHandler = (req, res, next) => {
-    (req as any).notificationNamespace = notificationNamespace;
+    (req as any).notify = notify;
     next();
   };
 
