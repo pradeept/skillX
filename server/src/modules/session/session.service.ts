@@ -9,56 +9,29 @@ import {
 } from "../../db/drizzle/schema.ts";
 import { alias } from "drizzle-orm/pg-core";
 
-// UPDATE THIS
-export const findAllSessions  = async (userId: string) => {
-  //aliases for tables
-  // provider => teacher
-  // requester => student
+export const findAllSessions = async (userId: string) => {
+  /* aliases for tables
+     provider => teacher
+    requester => student
+
+    ADD PAGINATION
+  */
   const provider = alias(User, "provider");
   const requester = alias(User, "requester");
 
-  const sessions = await db.transaction(async (tx) => {
-    const sessionRequests = await tx
-      .select({
-        id: SessionRequest.id,
-        skill: Skill.skill_name,
-        requester: requester.full_name,
-        requesterId: requester.id,
-        provider: provider.full_name,
-        providerId: provider.id,
-        status: SessionRequest.status,
-        schedule: SessionRequest.proposed_datetime,
-      })
-      .from(SessionRequest)
-      .where(
-        or(
-          eq(SessionRequest.requester_id, userId),
-          eq(SessionRequest.provider_id, userId)
-        )
-      )
-      .leftJoin(provider, eq(SessionRequest.provider_id, provider.id))
-      .leftJoin(requester, eq(SessionRequest.requester_id, requester.id))
-      .leftJoin(Skill, eq(SessionRequest.skill_id, Skill.id));
-
-    const pastSessions = await tx
-      .select({
-        id: Session.id,
-        schedule: Session.completed_at,
-        teacher: provider.full_name,
-        teacherId: provider.id,
-        student: requester.full_name,
-        studentId: requester.id,
-      })
-      .from(Session)
-      .where(eq(Session.learner_id, userId))
-      .leftJoin(provider, eq(provider.id, User.id))
-      .leftJoin(requester, eq(requester.id, User.id));
-
-    return {
-      sessionRequests,
-      pastSessions,
-    };
-  });
+  const sessions = await db
+    .select({
+      id: Session.id,
+      schedule: Session.completed_at,
+      teacher: provider.full_name,
+      teacherId: provider.id,
+      student: requester.full_name,
+      studentId: requester.id,
+    })
+    .from(Session)
+    .where(or(eq(Session.teacher_id, userId), eq(Session.learner_id, userId)))
+    .leftJoin(provider, eq(provider.id, User.id))
+    .leftJoin(requester, eq(requester.id, User.id));
   return sessions;
 };
 

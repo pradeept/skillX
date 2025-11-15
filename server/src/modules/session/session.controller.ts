@@ -6,9 +6,19 @@ import * as notificationService from "../notification/notification.service.ts";
 
 export const getAllSessions = async (
   req: Request & { data?: any },
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   const { id } = req.data; // from decoding jwt token
+  const validatedId = z.uuid().parse(id);
+
+  const sessions = await sessionService.findAllSessions(validatedId);
+
+  return res.status(200).json({
+    status: "success",
+    message: "Sessions found",
+    data: sessions,
+  });
 };
 
 // get details of one session
@@ -16,8 +26,8 @@ export const getOneSession = async (
   req: Request & { data?: any },
   res: Response
 ) => {
-  const { id } = req.data; // from decoding jwt token
-  const validatedId = z.uuid().parse(id);
+  const sessionId = req.params.id;
+  const validatedId = z.uuid().parse(sessionId);
 
   const sessionDetails = await sessionService.findOneSession(validatedId);
   return res.status(200).json({
