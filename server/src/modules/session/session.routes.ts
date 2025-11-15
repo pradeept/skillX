@@ -15,4 +15,4 @@ sessionRouter.get("/", isAuthorized, getAllSessions);
 sessionRouter.get("/:id", isAuthorized, getOneSession);
 
 // update session status
-sessionRouter.put("/:id", isAuthorized, updateSessionStatus);
+sessionRouter.put("/", isAuthorized, updateSessionStatus);

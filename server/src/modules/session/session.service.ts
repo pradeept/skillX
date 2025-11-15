@@ -3,8 +3,6 @@ import { db } from "../../db/drizzle/db.ts";
 import {
   Review,
   Session,
-  SessionRequest,
-  Skill,
   User,
 } from "../../db/drizzle/schema.ts";
 import { alias } from "drizzle-orm/pg-core";
@@ -35,7 +33,7 @@ export const findAllSessions = async (userId: string) => {
   return sessions;
 };
 
-export const findOneSession = async (sessionId: string) => {
+export const findOneSessionWithReview = async (sessionId: string) => {
   const session = await db.transaction(async (tx) => {
     const provider = alias(User, "provider");
     const requester = alias(User, "requester");
@@ -57,7 +55,15 @@ export const findOneSession = async (sessionId: string) => {
   return session;
 };
 
-// VERIFY THIS
+export const findOneSession = async (sessionId: string) => {
+  const session = await db
+    .select()
+    .from(Session)
+    .where(eq(Session.id, sessionId));
+  return session[0];
+};
+
+// VERIFY THIS - used in sesionRequest
 export const createSession = async (data: {
   requestId: string;
   teacherId: string;
@@ -79,4 +85,46 @@ export const createSession = async (data: {
     })
     .returning();
   return newSession[0];
+};
+
+export const updateSessionStatus = async (
+  data: {
+    sessionId: string;
+    status: "scheduled" | "completed" | "no_show" | "cancelled";
+  },
+  markedBy: "teacher" | "learner" | undefined
+) => {
+  const { sessionId, status } = data;
+  let updatedSession;
+  if (markedBy === "teacher") {
+    updatedSession = await db
+      .update(Session)
+      .set({
+        teacher_marked_complete: true,
+        updated_at: sql`now()`,
+      })
+      .where(eq(Session.id, sessionId))
+      .returning();
+  } else if (markedBy === "learner") {
+    updatedSession = await db
+      .update(Session)
+      .set({
+        learner_marked_complete: true,
+        updated_at: sql`now()`,
+      })
+      .where(eq(Session.id, sessionId))
+      .returning();
+  } else {
+    // status - 'no_show' | 'cancelled' | 'completed'(marked by both)
+    updatedSession = await db
+      .update(Session)
+      .set({
+        session_status: status,
+        updated_at: sql`now()`,
+      })
+      .where(eq(Session.id, sessionId))
+      .returning();
+  }
+
+  return updatedSession[0];
 };
