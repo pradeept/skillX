@@ -3,8 +3,8 @@ import {
   deleteProfile,
   getProfile,
   updateProfile,
-} from "../controllers/profileController.ts";
-import { isAuthorized } from "../middlewares/authorize.ts";
+} from "./profile.controller.ts";
+import { isAuthorized } from "../../middlewares/authorize.ts";
 
 export const profileRouter = Router();
 

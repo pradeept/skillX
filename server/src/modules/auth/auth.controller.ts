@@ -1,9 +1,9 @@
 import { type NextFunction, type Request, type Response } from "express";
-import { AppError } from "../utils/AppError.ts";
-import { loginSchema, registerSchema } from "../validators/auth.schema.ts";
-import * as authService from "../services/authService.ts";
-import { generateToken } from "../utils/jwt.ts";
-import { comparePassword, hashPassword } from "../utils/hash.ts";
+import { AppError } from "../../utils/AppError.ts";
+import { loginSchema, registerSchema } from "./auth.schema.ts";
+import * as authService from "./auth.service.ts";
+import { generateToken } from "../../utils/jwt.ts";
+import { comparePassword, hashPassword } from "../../utils/cypt.ts";
 
 export const login = async (
   req: Request,

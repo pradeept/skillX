@@ -1,11 +1,10 @@
 import { type NextFunction, type Request, type Response } from "express";
-import { AppError } from "../utils/AppError.ts";
-import * as profileService  from "../services/profileService.ts";
+import { AppError } from "../../utils/AppError.ts";
+import * as profileService from "./profile.service.ts";
 import {
   deleteProfileSchema,
   updateProfileSchema,
-} from "../validators/profile.schema.ts";
-
+} from "./profile.schema.ts";
 
 /*
     @Params: id

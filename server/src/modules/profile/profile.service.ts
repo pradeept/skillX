@@ -1,8 +1,8 @@
 import { eq, sql } from "drizzle-orm";
-import { db } from "../drizzle/db.ts";
-import { User } from "../drizzle/schema.ts";
-import type { UserType } from "../types/schema.types.ts";
-import { findUserByEmail } from "./authService.ts";
+import { db } from "../../db/drizzle/db.ts";
+import { User } from "../../db/drizzle/schema.ts";
+import type { UserType } from "../auth/user.types.ts";
+import { findUserByEmail } from "../auth/auth.service.ts";
 
 export const getUserDetails = findUserByEmail;
 

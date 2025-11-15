@@ -3,8 +3,8 @@ import {defineConfig} from "drizzle-kit"
 import 'dotenv/config'
 
 export default defineConfig({
-    out:'./src/drizzle/', //path to store migrations
-    schema:'./src/drizzle/schema.ts', 
+    out:'./src/db/drizzle/', //path to store migrations
+    schema:'./src/db/drizzle/schema.ts', 
     dialect:'postgresql',
     dbCredentials:{
         url:process.env.DATABASE_URL as string

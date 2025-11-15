@@ -1,12 +1,12 @@
 import "dotenv/config";
 import express from "express";
-import { authRouter } from "./src/routes/authRouter.ts";
+import { authRouter } from "./src/modules/auth/auth.routes.ts";
 import { errorHandler } from "./src/middlewares/errorHandler.ts";
 import cookieParser from "cookie-parser";
-import { profileRouter } from "./src/routes/profileRouter.ts";
-import { skillRouter } from "./src/routes/skillRouter.ts";
-import { getRedisClient } from "./src/configs/redis.ts";
-import notificationSocket from "./src/configs/socket.ts";
+import { profileRouter } from "./src/modules/profile/profile.routes.ts";
+import { skillRouter } from "./src/modules/skill/skill.routes.ts";
+import { getRedisClient } from "./src/configs/redis/redis.ts";
+import notificationSocket from "./src/configs/socket.io/socket.ts";
 import http from "http";
 
 const app = express();

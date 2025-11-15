@@ -1,17 +1,19 @@
-import z from "zod";
-import * as sessionService from "../services/sessionService.ts";
+import * as sessionRequestService from "./sessionRequest.service.ts";
 import type { NextFunction, Request, Response } from "express";
-import { sessionRequestValidation } from "../validators/session.schema.ts";
-import { AppError } from "../utils/AppError.ts";
+import { sessionRequestValidation } from "./sessionRequest.schema.ts";
+import * as notificationService from "../notification/notification.service.ts";
+import { AppError } from "../../utils/AppError.ts";
+import z from "zod";
 
-export const getAllSessions = async (
+
+export const getAllSessionRequests = async (
   req: Request & { data?: any },
   res: Response
 ) => {
   const { id } = req.data; // from decoding jwt token
   const validatedId = z.uuid().parse(id);
 
-  const sessions = await sessionService.findAllSessionsOfUser(validatedId);
+  const sessions = await sessionRequestService.findAllSessionRequests(validatedId);
 
   return res.status(200).json({
     status: "success",
@@ -19,22 +21,9 @@ export const getAllSessions = async (
   });
 };
 
-export const getOneSession = async (
-  req: Request & { data?: any },
-  res: Response
-) => {
-  const { id } = req.data; // from decoding jwt token
-  const validatedId = z.uuid().parse(id);
-
-  const sessionDetails = await sessionService.findOneSession(validatedId);
-  return res.status(200).json({
-    status: "success",
-    sessionDetails,
-  });
-};
 
 export const createSessionRequest = async (
-  req: Request & { data?: any },
+  req: Request & { data?: any; notify?: any },
   res: Response,
   next: NextFunction
 ) => {
@@ -43,9 +32,7 @@ export const createSessionRequest = async (
   const body = req.body;
 
   const validatedBody = sessionRequestValidation.parse(body);
-  const newSessionRequest = await sessionService.insertSessionRequest({
-    title: validatedBody.title,
-    description: validatedBody.description,
+  const newSessionRequest = await sessionRequestService.insertSessionRequest({
     requesterId: validatedId,
     providerId: validatedBody.providerId,
     schedule: validatedBody.schedule,
@@ -53,13 +40,23 @@ export const createSessionRequest = async (
   });
   if (newSessionRequest.length > 0) {
     console.log("Session request added successfully");
-    //-----
-    // create notification in db & push (if online) to provider (teacher)
-    //-----
+
+    const notifyFn = req.notify;
+    const userId = newSessionRequest[0]?.provider_id;
+
+    const newNotification = await notificationService.createNotification(
+      notifyFn,
+      userId as string,
+      `New session request`
+    );
+
+    if (!newNotification)
+      return next(new AppError("Failed to create notification", 500));
+
     return res.status(200).json({
       status: "success",
       message: "Session requested successfully",
-      data: newSessionRequest[0],
+      //   data: newSessionRequest[0],
     });
   } else {
     console.log("Failed to add session Request");
@@ -67,8 +64,10 @@ export const createSessionRequest = async (
   }
 };
 
+
+
 export const updateSessionRequest = async (
-  req: Request & { data?: any },
+  req: Request & { data?: any; notify: any },
   res: Response,
   next: NextFunction
 ) => {
@@ -88,12 +87,34 @@ export const updateSessionRequest = async (
     status: newStatus,
   });
 
-  const updatedSessionRequest = await sessionService.updateSessionRequestStatus(
+  const updatedSessionRequest = await sessionRequestService.updateSessionRequestStatus(
     {
       id: validatedId,
       status: validatedParams.status,
     }
   );
+
+  if (!updatedSessionRequest) {
+    return next(
+      new AppError(`Failed to ${validatedParams.status} session request`, 500)
+    );
+  } else {
+    const notifyFn = req.notify;
+    const userId = updatedSessionRequest.requester_id;
+
+    const newNotification = await notificationService.createNotification(
+      notifyFn,
+      userId,
+      `Session request ${validatedParams.status} successfully`
+    );
+
+    if (!newNotification)
+      return next(new AppError("Failed to create notification", 500));
+
+    return res
+      .status(200)
+      .json(`Session request ${validatedParams.status} successfully`);
+  }
 
   //---
   // create notification in db & push (if online) to requester (student)

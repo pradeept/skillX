@@ -1,9 +1,9 @@
 // notificationSocket.js
 import { Server } from "socket.io";
-import { getRedisClient } from "./redis.ts";
+import { getRedisClient } from "../redis/redis.ts";
 import type http from "http";
 import type { RequestHandler } from "express";
-import { verifyToken } from "../utils/jwt.ts";
+import { verifyToken } from "../../utils/jwt.ts";
 
 export default async function notificationSocket(
   server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>
@@ -20,14 +20,12 @@ export default async function notificationSocket(
 
   console.log("✅ Socket.io server initialized");
 
-
   // namespace for notifications
   const notificationNamespace = io.of("/api/notification");
 
   notificationNamespace.on("connection", async (socket) => {
     const userId = socket.handshake.query.userId;
     const token = socket.handshake.headers.authorization;
-
 
     if (!userId || !token || !verifyToken(token)?.split(" ")[1]) {
       console.log(
@@ -52,15 +50,10 @@ export default async function notificationSocket(
     });
   });
 
-  const notify = async (userId: string, message: string)=>{
-    const isUserOnline = await redis.get(`user:${userId}`);
-    if(isUserOnline){
-      notificationNamespace.to(`user:${userId}`).emit("notification", message);
-      return true;
-    }else{
-      return false;
-    }
-  }
+  const notify = async (userId: string, message: string) => {
+    notificationNamespace.to(`user:${userId}`).emit("notification", message);
+    return true;
+  };
 
   // return middleware-like function that adds the helper to app
   const middleware: RequestHandler = (req, res, next) => {

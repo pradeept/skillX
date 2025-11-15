@@ -1,15 +1,16 @@
 import { eq, or, sql } from "drizzle-orm";
-import { db } from "../drizzle/db.ts";
+import { db } from "../../db/drizzle/db.ts";
 import {
   Review,
   Session,
   SessionRequest,
   Skill,
   User,
-} from "../drizzle/schema.ts";
+} from "../../db/drizzle/schema.ts";
 import { alias } from "drizzle-orm/pg-core";
 
-export const findAllSessionsOfUser = async (userId: string) => {
+// UPDATE THIS
+export const findAllSessions  = async (userId: string) => {
   //aliases for tables
   // provider => teacher
   // requester => student
@@ -67,18 +68,7 @@ export const findOneSession = async (sessionId: string) => {
     const requester = alias(User, "requester");
 
     const sessionDetails = await tx
-      .select({
-        id: SessionRequest.id,
-        // title: SessionRequest.title,
-        // description: SessionRequest.description,
-        skill: Skill.skill_name,
-        requester: requester.full_name,
-        requesterId: requester.id,
-        provider: provider.full_name,
-        providerId: provider.id,
-        status: SessionRequest.status,
-        schedule: SessionRequest.proposed_datetime,
-      })
+      .select()
       .from(Session)
       .where(eq(Session.id, sessionId))
       .leftJoin(User, eq(Session.teacher_id, provider.id))
@@ -94,51 +84,26 @@ export const findOneSession = async (sessionId: string) => {
   return session;
 };
 
-export const insertSessionRequest = async (data: {
-  title: string;
-  description: string;
-  requesterId: string;
-  providerId: string;
-  schedule: Date;
+// VERIFY THIS
+export const createSession = async (data: {
+  requestId: string;
+  teacherId: string;
+  learnerId: string;
   skillId: string;
+  schedule: Date;
 }) => {
-  const { title, description, requesterId, providerId, schedule, skillId } =
-    data;
-
-  const newSessionRequest = await db
-    .insert(SessionRequest)
+  const { requestId, teacherId, learnerId, skillId, schedule } = data;
+  const newSession = await db
+    .insert(Session)
     .values({
-      requester_id: requesterId,
-      provider_id: providerId,
-      proposed_datetime: schedule,
+      request_id: requestId,
+      teacher_id: teacherId,
+      learner_id: learnerId,
       skill_id: skillId,
+      scheduled_datetime: schedule,
       created_at: sql`now()`,
       updated_at: sql`now()`,
     })
-    .returning({
-      requestId: SessionRequest.id,
-      status: SessionRequest.status,
-      schedule: SessionRequest.proposed_datetime,
-      skillId: SessionRequest.skill_id,
-    });
-
-  return newSessionRequest;
-};
-
-export const updateSessionRequestStatus = async (data: {
-  id: string;
-  status: "accepted" | "declined" | "cancelled";
-}) => {
-  const { id, status } = data;
-  const updatedSessionRequest = await db
-    .update(SessionRequest)
-    .set({
-      status,
-      updated_at: sql`now()`,
-    })
-    .where(eq(SessionRequest.id, id))
-    .returning({
-      requestId: SessionRequest.id,
-    });
-  return updatedSessionRequest;
+    .returning();
+  return newSession[0];
 };

@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
-import { db } from "../drizzle/db.ts";
-import { User } from "../drizzle/schema.ts";
+import { db } from "../../db/drizzle/db.ts";
+import { User } from "../../db/drizzle/schema.ts";
 
 export const findUserByEmail = async (email: string) => {
   const user = await db.select().from(User).where(eq(User.email, email));
