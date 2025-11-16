@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
-import { db } from "../drizzle/db.ts";
-import { User } from "../drizzle/schema.ts";
+import { eq, sql } from "drizzle-orm";
+import { db } from "../../db/drizzle/db.ts";
+import { User } from "../../db/drizzle/schema.ts";
 
 export const findUserByEmail = async (email: string) => {
   const user = await db.select().from(User).where(eq(User.email, email));
@@ -21,7 +21,13 @@ export const createNewUser = async (userData: {
   const { full_name, email, password_hash } = userData;
   const newUser = await db
     .insert(User)
-    .values({ full_name, email, password_hash })
+    .values({
+      full_name,
+      email,
+      password_hash,
+      created_at: sql`now()`,
+      updated_at: sql`now()`,
+    })
     .returning();
-  return newUser[0]
+  return newUser[0];
 };

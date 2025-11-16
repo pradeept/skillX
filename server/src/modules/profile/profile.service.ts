@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
-import { db } from "../drizzle/db.ts";
-import { User } from "../drizzle/schema.ts";
-import type { UserType } from "../types/schema.types.ts";
-import { findUserByEmail } from "./authService.ts";
+import { eq, sql } from "drizzle-orm";
+import { db } from "../../db/drizzle/db.ts";
+import { User } from "../../db/drizzle/schema.ts";
+import type { UserType } from "../auth/user.types.ts";
+import { findUserByEmail } from "../auth/auth.service.ts";
 
 export const getUserDetails = findUserByEmail;
 
@@ -24,6 +24,7 @@ export const updateUserDetails = async (data: Partial<UserType>) => {
       full_name,
       bio,
       avatar_url,
+      updated_at: sql`now()`,
     })
     .where(eq(User.id, id!))
     .returning();
@@ -34,7 +35,7 @@ export const deleteUserAccount = async (id: string) => {
   const userId = id;
   const deletedUser = await db
     .update(User)
-    .set({ account_status: "suspended" })
+    .set({ account_status: "suspended", updated_at: sql`now()` })
     .where(eq(User.id, userId))
     .returning({ id: User.id });
   return deletedUser[0];

@@ -1,10 +1,10 @@
 import z from "zod";
-import * as skillService from "../services/skillService.ts";
+import * as skillService from "./skill.service.ts";
 import { type NextFunction, type Request, type Response } from "express";
-import { addOrUpdateSkillSchema } from "../validators/skill.schema.ts";
-import { AppError } from "../utils/AppError.ts";
+import { addOrUpdateSkillSchema } from "./skill.schema.ts";
+import { AppError } from "../../utils/AppError.ts";
 
-const UNKNOWN_CATEGORY_ID = "746b22f3-7f75-4c95-b69c-e1c4e98ff349"
+const UNKNOWN_CATEGORY_ID = "746b22f3-7f75-4c95-b69c-e1c4e98ff349";
 
 export const getSkill = async (
   req: Request & { data?: any },
@@ -55,7 +55,6 @@ export const addOrUpdateSkill = async (
     const newSkillNames = skillNames.filter(
       (skill) => !existingSkills.map((s) => s.skill_name).includes(skill)
     );
-
 
     let newSkills;
     // format and add non existing skills to "skills" table
@@ -119,4 +118,3 @@ export const addOrUpdateSkill = async (
     return next(new AppError("Failed to update skills", 500));
   }
 };
-

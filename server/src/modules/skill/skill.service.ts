@@ -1,6 +1,11 @@
 import { eq, inArray } from "drizzle-orm";
-import { Skill, SkillCategory, User, UserSkill } from "../drizzle/schema.ts";
-import { db } from "../drizzle/db.ts";
+import {
+  Skill,
+  SkillCategory,
+  User,
+  UserSkill,
+} from "../../db/drizzle/schema.ts";
+import { db } from "../../db/drizzle/db.ts";
 
 export const getUserSkills = async (id: string) => {
   const skills = await db

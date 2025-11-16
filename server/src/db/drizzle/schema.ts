@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   pgEnum,
   pgTable,
@@ -23,8 +24,8 @@ export const accountStatusEnum = pgEnum("account_status", [
 
 // metadata
 const timestamps = {
-  created_at: timestamp().defaultNow(),
-  updated_at: timestamp().defaultNow(),
+  created_at: timestamp().defaultNow().notNull(),
+  updated_at: timestamp().defaultNow().notNull(),
 };
 
 export const User = pgTable("users", {
@@ -68,36 +69,42 @@ export const UserSkill = pgTable(
   "user_skills",
   {
     id: uuid().primaryKey().defaultRandom(),
-    user_id: uuid().references(() => User.id).notNull(),
-    skill_id: uuid().references(() => Skill.id).notNull(),
+    user_id: uuid()
+      .references(() => User.id)
+      .notNull(),
+    skill_id: uuid()
+      .references(() => Skill.id)
+      .notNull(),
     type: skillTypeEnum("type").notNull(),
   },
   (table) => [unique().on(table.skill_id, table.user_id, table.type)]
 );
 
 // --- Session ---
-
-export const statusEnum = pgEnum("status", [
+export const requestStatusEnum = pgEnum("request_status", [
+  "pending",
   "accepted",
   "declined",
-  "cancelled",
-  "pending",
+  "cancelled", //by requester before accepted
 ]);
 
 export const SessionRequest = pgTable("session_request", {
   id: uuid().primaryKey().defaultRandom(),
+
   requester_id: uuid()
-    .references(() => User.id)
+    .references(() => User.id, { onDelete: "cascade" })
     .notNull(),
   provider_id: uuid()
-    .references(() => User.id)
+    .references(() => User.id, { onDelete: "cascade" })
     .notNull(),
-  schedule: timestamp().notNull(),
+  skill_id: uuid().references(() => Skill.id, { onDelete: "set null" }),
 
-  requester_message: varchar({ length: 255 }),
+  proposed_datetime: timestamp().notNull(),
+  message: varchar({ length: 500 }),
 
-  status: statusEnum("status").default("pending").notNull(),
-  provider_message: varchar({ length: 255 }),
+  status: requestStatusEnum("status").default("pending").notNull(),
+  declined_reason: varchar({ length: 500 }),
+
   ...timestamps,
 });
 
@@ -105,21 +112,34 @@ export const sessionStatusEnum = pgEnum("session_status", [
   "scheduled",
   "completed",
   "cancelled",
+  "no_show",
 ]);
-
-// when provider accepts / cancels / declains => will save in session table
 
 export const Session = pgTable("session", {
   id: uuid().primaryKey().defaultRandom(),
-  requester_id: uuid()
-    .references(() => User.id)
+
+  //original request
+  request_id: uuid()
+    .references(() => SessionRequest.id, { onDelete: "set null" })
+    .unique(),
+
+  teacher_id: uuid()
+    .references(() => User.id, { onDelete: "cascade" })
     .notNull(),
-  provider_id: uuid()
-    .references(() => User.id)
+  learner_id: uuid()
+    .references(() => User.id, { onDelete: "cascade" })
     .notNull(),
-  session_status: sessionStatusEnum("session_status").notNull(),
+  skill_id: uuid().references(() => Skill.id, { onDelete: "set null" }),
+
+  scheduled_datetime: timestamp().notNull(),
   duration_minutes: smallint().default(60),
-  completed_at: timestamp().notNull(),
+
+  session_status: sessionStatusEnum("status").default("scheduled").notNull(),
+  teacher_marked_complete: boolean().default(false),
+  learner_marked_complete: boolean().default(false),
+
+  completed_at: timestamp(),
+  ...timestamps,
 });
 
 // --- Review ---
@@ -153,13 +173,25 @@ export const transactionReason = pgEnum("reason", [
 ]);
 export const PointsTransaction = pgTable("points_transaction", {
   id: uuid().primaryKey().defaultRandom(),
-  user_id: uuid().references(() => User.id).notNull(),
+  user_id: uuid()
+    .references(() => User.id)
+    .notNull(),
   transaction_type: transactionTypeEnum("transaction_type").notNull(),
   reason: transactionReason("reason").notNull(),
   amount: smallint().notNull(),
 });
 
+// notification
+export const Notifications = pgTable("notifications", {
+  id: uuid().primaryKey().defaultRandom(),
+  user_id: uuid()
+    .references(() => User.id)
+    .notNull(),
+  message: varchar({ length: 255 }).notNull(),
+  read: boolean().default(false).notNull(),
+});
+
 // -- Triggers --
 
-// function and trigger to update lessons_learned and lessons_taught 
+// function and trigger to update lessons_learned and lessons_taught
 // after a session is completed
