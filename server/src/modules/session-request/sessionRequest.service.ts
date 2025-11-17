@@ -12,6 +12,8 @@ import { alias } from "drizzle-orm/pg-core";
 import { AppError } from "../../utils/AppError.ts";
 import * as sessionService from "../session/session.service.ts";
 
+// const DEFAULT_SESSION_DURATION_MINUTES = 60;
+
 export const findAllSessionRequests = async (userId: string) => {
   //aliases for tables
   // provider => teacher

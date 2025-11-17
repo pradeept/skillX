@@ -70,7 +70,7 @@ export const createSessionRequest = async (
 };
 
 export const updateSessionRequest = async (
-  req: Request & { data?: any; notify: any },
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
