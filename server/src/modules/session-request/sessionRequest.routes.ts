@@ -30,10 +30,3 @@ sessionRequestRouter.put(
   asyncHandler(updateSessionRequest)
 );
 
-/*
-
-8053ada2-9c3c-4fa5-a004-9cc415c57d1e - pradeep usedId
-
-pradeepa offers
-3bc99182-cfc5-448e-84c6-d66f15de2f2c - node skill
-*/
