@@ -41,9 +41,9 @@ export const findOneSessionWithReview = async (sessionId: string) => {
     const sessionDetails = await tx
       .select()
       .from(Session)
+      .leftJoin(provider, eq(Session.teacher_id, provider.id))
+      .leftJoin(requester, eq(Session.learner_id, requester.id))
       .where(eq(Session.id, sessionId))
-      .leftJoin(User, eq(Session.teacher_id, provider.id))
-      .leftJoin(User, eq(Session.learner_id, requester.id));
 
     const reviews = await tx
       .select()

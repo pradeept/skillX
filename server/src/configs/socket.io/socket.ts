@@ -26,8 +26,8 @@ export default async function notificationSocket(
   notificationNamespace.on("connection", async (socket) => {
     const userId = socket.handshake.query.userId;
     const token = socket.handshake.headers.authorization;
-
-    if (!userId || !token || !verifyToken(token)?.split(" ")[1]) {
+    
+    if (!userId || !token || !verifyToken(token)) {
       console.log(
         "❌ Invalid userId or Authorization token — disconnecting socket"
       );
@@ -38,7 +38,7 @@ export default async function notificationSocket(
     console.log(`✅ User ${userId} connected [socket:${socket.id}]`);
 
     // set user as online in redis
-    await redis?.SET(`user:${userId}`, "true");
+    await redis.set(`user:${userId}`, "true");
 
     // join a private room for targeted notifications
     socket.join(`user:${userId}`);

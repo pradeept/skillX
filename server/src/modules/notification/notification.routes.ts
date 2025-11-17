@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthorized } from "../middlewares/authorize.ts";
+import { isAuthorized } from "../../middlewares/authorize.ts";
 
 const notificationRouter = Router();
 

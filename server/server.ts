@@ -8,6 +8,8 @@ import { skillRouter } from "./src/modules/skill/skill.routes.ts";
 import { getRedisClient } from "./src/configs/redis/redis.ts";
 import notificationSocket from "./src/configs/socket.io/socket.ts";
 import http from "http";
+import { sessionRequestRouter } from "./src/modules/session-request/sessionRequest.routes.ts";
+import { sessionRouter } from "./src/modules/session/session.routes.ts";
 
 const app = express();
 
@@ -30,6 +32,8 @@ app.use(notificationMiddleware);
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/skill", skillRouter);
+app.use('/api/session-request',sessionRequestRouter)
+app.use('/api/session',sessionRouter)
 
 app.use(errorHandler); //error handler
 
