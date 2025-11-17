@@ -5,25 +5,23 @@ import * as notificationService from "../notification/notification.service.ts";
 import { AppError } from "../../utils/AppError.ts";
 import z from "zod";
 
-
-export const getAllSessionRequests = async (
-  req: Request & { data?: any },
-  res: Response
-) => {
+export const getAllSessionRequests = async (req: Request, res: Response) => {
   const { id } = req.data; // from decoding jwt token
   const validatedId = z.uuid().parse(id);
 
-  const sessions = await sessionRequestService.findAllSessionRequests(validatedId);
+  const sessionRequests = await sessionRequestService.findAllSessionRequests(
+    validatedId
+  );
 
   return res.status(200).json({
     status: "success",
-    sessions,
+    message: `${sessionRequests.length} Session requests found`,
+    data: sessionRequests,
   });
 };
 
-
 export const createSessionRequest = async (
-  req: Request & { data?: any; notify?: any },
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -38,11 +36,11 @@ export const createSessionRequest = async (
     schedule: validatedBody.schedule,
     skillId: validatedBody.skillId,
   });
-  if (newSessionRequest.length > 0) {
+  if (newSessionRequest) {
     console.log("Session request added successfully");
 
     const notifyFn = req.notify;
-    const userId = newSessionRequest[0]?.provider_id;
+    const userId = newSessionRequest.provider_id;
 
     const newNotification = await notificationService.createNotification(
       notifyFn,
@@ -56,15 +54,20 @@ export const createSessionRequest = async (
     return res.status(200).json({
       status: "success",
       message: "Session requested successfully",
-      //   data: newSessionRequest[0],
+      data: {
+        id: newSessionRequest.id,
+        requesterId: newSessionRequest.requester_id,
+        providerId: newSessionRequest.provider_id,
+        skillId: newSessionRequest.skill_id,
+        schedule: newSessionRequest.proposed_datetime,
+        status: newSessionRequest.status,
+      },
     });
   } else {
-    console.log("Failed to add session Request");
-    return next(new AppError("Failed to update skills", 500));
+    console.log("Failed to create session Request");
+    return next(new AppError("Failed to create session request", 500));
   }
 };
-
-
 
 export const updateSessionRequest = async (
   req: Request & { data?: any; notify: any },
@@ -87,12 +90,12 @@ export const updateSessionRequest = async (
     status: newStatus,
   });
 
-  const updatedSessionRequest = await sessionRequestService.updateSessionRequestStatus(
-    {
-      id: validatedId,
+  const updatedSessionRequest =
+    await sessionRequestService.updateSessionRequestStatus({
+      userId: validatedId,
+      sessionRequestId: validatedParams.id,
       status: validatedParams.status,
-    }
-  );
+    });
 
   if (!updatedSessionRequest) {
     return next(
@@ -100,11 +103,17 @@ export const updateSessionRequest = async (
     );
   } else {
     const notifyFn = req.notify;
-    const userId = updatedSessionRequest.requester_id;
+    const learnerId = updatedSessionRequest.requester_id;
+    const teacherId = updatedSessionRequest.provider_id;
+    const notifyUserId =
+      validatedParams.status === "accepted" ||
+      validatedParams.status === "declined"
+        ? learnerId
+        : teacherId;
 
     const newNotification = await notificationService.createNotification(
       notifyFn,
-      userId,
+      notifyUserId,
       `Session request ${validatedParams.status} successfully`
     );
 
@@ -115,12 +124,4 @@ export const updateSessionRequest = async (
       .status(200)
       .json(`Session request ${validatedParams.status} successfully`);
   }
-
-  //---
-  // create notification in db & push (if online) to requester (student)
-  //---
-  //if status is accepted CREATE this entry in sessions table link the request.
-  //---
-  // if status is completed from both provider and requester - credit & debit points
-  // accordingly. create notifications of points
 };
