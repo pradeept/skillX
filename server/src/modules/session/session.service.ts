@@ -1,11 +1,8 @@
 import { eq, or, sql } from "drizzle-orm";
 import { db } from "../../db/drizzle/db.ts";
-import {
-  Review,
-  Session,
-  User,
-} from "../../db/drizzle/schema.ts";
+import { Review, Session, User } from "../../db/drizzle/schema.ts";
 import { alias } from "drizzle-orm/pg-core";
+import { AppError } from "../../utils/AppError.ts";
 
 export const findAllSessions = async (userId: string) => {
   /* aliases for tables
@@ -28,25 +25,42 @@ export const findAllSessions = async (userId: string) => {
     })
     .from(Session)
     .where(or(eq(Session.teacher_id, userId), eq(Session.learner_id, userId)))
-    .leftJoin(provider, eq(provider.id, User.id))
-    .leftJoin(requester, eq(requester.id, User.id));
+    .leftJoin(provider, eq(provider.id, userId))
+    .leftJoin(requester, eq(requester.id, userId));
   return sessions;
 };
 
 export const findOneSessionWithReview = async (sessionId: string) => {
+  // business rules
+  // 1. check if the session exists
+  const isSessionExists = await findOneSession(sessionId);
+
+  if (!isSessionExists) {
+    throw new AppError("Invalid session id", 400);
+  }
+
+  // get sessions with respective reviews
   const session = await db.transaction(async (tx) => {
     const provider = alias(User, "provider");
     const requester = alias(User, "requester");
 
     const sessionDetails = await tx
-      .select()
+      .select({
+        id: Session.id,
+        providerName: provider.full_name,
+        requesterName: requester.full_name,
+        schedule: Session.scheduled_datetime,
+        sessionStatus: Session.session_status,
+        providerLevel: provider.level,
+        requesterLevel: requester.level,
+      })
       .from(Session)
       .leftJoin(provider, eq(Session.teacher_id, provider.id))
       .leftJoin(requester, eq(Session.learner_id, requester.id))
-      .where(eq(Session.id, sessionId))
+      .where(eq(Session.id, sessionId));
 
     const reviews = await tx
-      .select()
+      .select({})
       .from(Review)
       .where(eq(Review.session_id, sessionId));
 
@@ -55,6 +69,7 @@ export const findOneSessionWithReview = async (sessionId: string) => {
   return session;
 };
 
+// helper service
 export const findOneSession = async (sessionId: string) => {
   const session = await db
     .select()
@@ -63,7 +78,7 @@ export const findOneSession = async (sessionId: string) => {
   return session[0];
 };
 
-// VERIFY THIS - used in sesionRequest
+// helper service - used in session-request
 export const createSession = async (data: {
   requestId: string;
   teacherId: string;
@@ -88,15 +103,31 @@ export const createSession = async (data: {
 };
 
 export const updateSessionStatus = async (
-  data: {
-    sessionId: string;
-    status: "scheduled" | "completed" | "no_show" | "cancelled";
-  },
-  markedBy: "teacher" | "learner" | undefined
+  sessionId: string,
+  status: "scheduled" | "completed" | "no_show" | "cancelled",
+  userId: string,
 ) => {
-  const { sessionId, status } = data;
+  // business rules
+  // 1. check if session exists
+  const isSessionExists = await findOneSession(sessionId);
+
+  if (!isSessionExists) {
+    throw new AppError("Invalid session id", 400);
+  }
+
+  // 2. if new status is same as old status - mark duplicate
+  if (isSessionExists.session_status === status) {
+    throw new AppError("Duplicate request status not modified", 204);
+  }
+
+  // 3. only learner can cancel the session
+  if (status === "cancelled" && isSessionExists.request_id !== userId) {
+    throw new AppError("You are not authorized to perform this action", 403);
+  }
+
   let updatedSession;
-  if (markedBy === "teacher") {
+
+  if (status === "completed" && userId === isSessionExists.teacher_id) {
     updatedSession = await db
       .update(Session)
       .set({
@@ -105,7 +136,7 @@ export const updateSessionStatus = async (
       })
       .where(eq(Session.id, sessionId))
       .returning();
-  } else if (markedBy === "learner") {
+  } else if (status === "completed" && userId === isSessionExists.learner_id) {
     updatedSession = await db
       .update(Session)
       .set({
@@ -115,7 +146,7 @@ export const updateSessionStatus = async (
       .where(eq(Session.id, sessionId))
       .returning();
   } else {
-    // status - 'no_show' | 'cancelled' | 'completed'(marked by both)
+    // status - 'no_show' | 'cancelled' 
     updatedSession = await db
       .update(Session)
       .set({
@@ -124,6 +155,9 @@ export const updateSessionStatus = async (
       })
       .where(eq(Session.id, sessionId))
       .returning();
+      if(status === 'cancelled'){
+        //DEDUCT POINTS
+      }
   }
 
   return updatedSession[0];

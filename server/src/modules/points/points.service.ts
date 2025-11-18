@@ -7,6 +7,14 @@
     - (future) buying points
 */
 
+const creditPoints = async (
+  userId: string,
+  points: number,
+  reason: string
+) => {
+    
+};
+
 // debit points from a user
 // create a transaction record in point_transaction
 

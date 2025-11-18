@@ -6,7 +6,7 @@ import * as notificationService from "../notification/notification.service.ts";
 import { updateSessionSchema } from "./session.schema.ts";
 
 export const getAllSessions = async (
-  req: Request & { data?: any },
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -17,16 +17,13 @@ export const getAllSessions = async (
 
   return res.status(200).json({
     status: "success",
-    message: "Sessions found",
+    message: `${sessions.length} sessions found`,
     data: sessions,
   });
 };
 
 // get details of one session
-export const getOneSession = async (
-  req: Request & { data?: any },
-  res: Response
-) => {
+export const getOneSession = async (req: Request, res: Response) => {
   const sessionId = req.params.id;
   const validatedId = z.uuid().parse(sessionId);
 
@@ -35,13 +32,13 @@ export const getOneSession = async (
   );
   return res.status(200).json({
     status: "success",
-    sessionDetails,
+    data: sessionDetails,
   });
 };
 
-// update session status 
+// update session status
 export const updateSessionStatus = async (
-  req: Request & { data: any; notify: any },
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -49,91 +46,65 @@ export const updateSessionStatus = async (
   const userId = req.data.id;
   const validatedBody = updateSessionSchema.parse(body);
   const notifyFn = req.notify;
+  const { sessionId, status } = validatedBody;
 
-  // check sessionId is valid
-  const isSessionExists = await sessionService.findOneSession(
-    validatedBody.sessionId
+  const updatedSession = await sessionService.updateSessionStatus(
+    sessionId,
+    status,
+    userId
   );
 
-  if (!isSessionExists) {
-    return next(new AppError("Session not found", 404));
+  if (!updatedSession) {
+    throw new AppError("Failed to update the sesion", 500);
   }
 
-  let updatedSession;
-
   if (
-    validatedBody.status === "completed" &&
-    isSessionExists.teacher_marked_complete &&
-    isSessionExists.learner_marked_complete
+    updatedSession.teacher_marked_complete &&
+    updatedSession.learner_marked_complete
   ) {
-    updatedSession = await sessionService.updateSessionStatus(
-      validatedBody,
-      undefined
-    );
     const notifyTeacher = await notificationService.createNotification(
       notifyFn,
-      isSessionExists.teacher_id,
+      updatedSession.teacher_id,
       "Session is completed. Provide a review and earn points"
     );
     const notifyStudent = await notificationService.createNotification(
       notifyFn,
-      isSessionExists.learner_id,
+      updatedSession.learner_id,
       "Session is completed. Provide a review and earn points"
     );
     if (!notifyTeacher || !notifyStudent)
       console.log("Failed to create notifications");
     // ADD TRIGGER IN SCHEMA for user details updation
   } else if (
-    (validatedBody.status === "completed" &&
-      isSessionExists.teacher_marked_complete) ||
-    isSessionExists.learner_marked_complete
+    (status === "completed" && updatedSession.teacher_marked_complete) ||
+    updatedSession.learner_marked_complete
   ) {
     const markedBy =
       validatedBody.status === "completed" &&
-      userId === isSessionExists.teacher_id
+      userId === updatedSession.teacher_id
         ? "teacher"
         : "learner";
-    updatedSession = await sessionService.updateSessionStatus(
-      validatedBody,
-      markedBy
-    );
+
     const notify = await notificationService.createNotification(
       notifyFn,
       markedBy === "teacher"
-        ? isSessionExists.learner_id
-        : isSessionExists.teacher_id,
+        ? updatedSession.learner_id
+        : updatedSession.teacher_id,
       `Session has been marked complete by ${
         markedBy === "learner" ? "student" : "teacher"
       }`
     );
     if (!notify) console.log("Failed to create notification");
   } else if (validatedBody.status === "cancelled") {
-    // only student can cancel a session
-    if (!isSessionExists.learner_id === userId) {
-      return res.status(400).json({
-        status: "error",
-        message: "You are not the requester of this session",
-      });
-    } else {
-      updatedSession = await sessionService.updateSessionStatus(
-        validatedBody,
-        undefined
-      );
-    }
-    //DEDUCT POINTS
     //notify teacher
     const notify = await notificationService.createNotification(
       notifyFn,
-      isSessionExists.teacher_id,
+      updatedSession.teacher_id,
       `Session has been cancelled by ${userId}`
     );
     if (!notify) console.log("Failed to create notification");
   } else {
     // no_show - UPDATE AFTER IMPLEMENTING VIDEO CONF feat
-    updatedSession = await sessionService.updateSessionStatus(
-      validatedBody,
-      undefined
-    );
     // DEDUCT POINTS
     // NOTIFY BOTH
   }
