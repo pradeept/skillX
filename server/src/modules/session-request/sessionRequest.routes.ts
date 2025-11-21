@@ -29,4 +29,3 @@ sessionRequestRouter.put(
   isAuthorized,
   asyncHandler(updateSessionRequest)
 );
-
