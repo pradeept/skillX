@@ -170,6 +170,9 @@ export const transactionReason = pgEnum("reason", [
   "session_completed",
   "signup_bonus",
   "review_given",
+  "session_cancelled",
+  "no_show",
+  "session_requested",
 ]);
 export const PointsTransaction = pgTable("points_transaction", {
   id: uuid().primaryKey().defaultRandom(),
@@ -193,5 +196,13 @@ export const Notifications = pgTable("notifications", {
 
 // -- Triggers --
 
-// function and trigger to update lessons_learned and lessons_taught
-// after a session is completed
+// for updating no_of_lessons_taught / learnt
+
+
+// NOTE: Ditching it for now as drizzle not yet supports
+// triggers and I don't want to complicate by integrating
+// libs like atlas .
+
+
+// -- Video Conferencing --
+

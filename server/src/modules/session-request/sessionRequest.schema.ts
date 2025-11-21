@@ -5,6 +5,15 @@ export const sessionRequestValidation = z.object({
   providerId: z.uuid("provider id is required").min(36).max(36),
   schedule: z.iso
     .datetime("schedule is required")
+    .refine(
+      (val) => {
+        const parsedDate = new Date(val);
+        return parsedDate >= new Date(); 
+      },
+      {
+        message: "Datetime cannot be in the past",
+      }
+    )
     .transform((val) => new Date(val)),
   skillId: z.uuid("skill id is required").min(36).max(36),
 });
