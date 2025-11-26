@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-
+import LenisProvider from "../components/LenisProvider";
 
 export const metadata: Metadata = {
   title: "SkillBull",
@@ -12,8 +12,7 @@ export const metadata: Metadata = {
     "skill exchange platform",
     "skill barter",
   ],
-  applicationName: 'SkillBull',
-  
+  applicationName: "SkillBull",
 };
 
 export default function RootLayout({
@@ -23,9 +22,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body
-        className={` antialiased`}
-      >
+      <body className={` antialiased`}>
+        <LenisProvider />
         {children}
       </body>
     </html>
