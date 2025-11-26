@@ -3,7 +3,7 @@ import logo from "@/../public/logo.png";
 export default function Logo() {
   return (
     <div>
-      <Image src={logo} alt='logo' loading="eager" />
+      <Image src={logo} height={44} width={44} alt='logo' loading='eager' />
     </div>
   );
 }
