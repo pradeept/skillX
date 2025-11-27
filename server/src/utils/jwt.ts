@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import type { UserType } from "../modules/auth/user.types.ts";
+import type { UserType } from "../domains/auth/user.types.ts";
 
 export const generateToken = (userDetails: Partial<UserType>) => {
   const token = jwt.sign(userDetails, process.env.JWT_SECRET as string, {
