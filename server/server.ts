@@ -10,9 +10,12 @@ import notificationSocket from "./src/configs/socket.io/socket.ts";
 import http from "http";
 import { sessionRequestRouter } from "./src/domains/session-request/sessionRequest.routes.ts";
 import { sessionRouter } from "./src/domains/session/session.routes.ts";
+import { videoConfRouter } from "./src/domains/video-conf/videoConf.routes.ts";
+import cors from "cors";
 
 const app = express();
 
+app.use(cors({ origin: "*" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -34,6 +37,7 @@ app.use("/api/profile", profileRouter);
 app.use("/api/skill", skillRouter);
 app.use("/api/session-request", sessionRequestRouter);
 app.use("/api/session", sessionRouter);
+app.use("/api/video", videoConfRouter);
 
 app.use(errorHandler); //error handler
 

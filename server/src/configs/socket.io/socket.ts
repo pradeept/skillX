@@ -1,4 +1,3 @@
-// notificationSocket.js
 import { Server } from "socket.io";
 import { getRedisClient } from "../redis/redis.ts";
 import type http from "http";
@@ -26,8 +25,15 @@ export default async function notificationSocket(
   notificationNamespace.on("connection", async (socket) => {
     const userId = socket.handshake.query.userId;
     const token = socket.handshake.headers.authorization;
-    
-    if (!userId || !token || !verifyToken(token)) {
+
+    if (!token) {
+      console.log("❌ Token not provided,disconnecting the connection");
+      socket.disconnect(true);
+      return;
+    }
+
+    const cleanToken = token.replace("Bearer ", "");
+    if (!userId || !cleanToken || !verifyToken(cleanToken)) {
       console.log(
         "❌ Invalid userId or Authorization token — disconnecting socket"
       );
