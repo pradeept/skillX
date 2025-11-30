@@ -1,7 +1,6 @@
 import { eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "../../db/drizzle/db.ts";
 import {
-  Review,
   Session,
   SessionRequest,
   Skill,

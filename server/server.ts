@@ -1,18 +1,21 @@
 import "dotenv/config";
 import express from "express";
-import { authRouter } from "./src/modules/auth/auth.routes.ts";
+import { authRouter } from "./src/domains/auth/auth.routes.ts";
 import { errorHandler } from "./src/middlewares/errorHandler.ts";
 import cookieParser from "cookie-parser";
-import { profileRouter } from "./src/modules/profile/profile.routes.ts";
-import { skillRouter } from "./src/modules/skill/skill.routes.ts";
+import { profileRouter } from "./src/domains/profile/profile.routes.ts";
+import { skillRouter } from "./src/domains/skill/skill.routes.ts";
 import { getRedisClient } from "./src/configs/redis/redis.ts";
 import notificationSocket from "./src/configs/socket.io/socket.ts";
 import http from "http";
-import { sessionRequestRouter } from "./src/modules/session-request/sessionRequest.routes.ts";
-import { sessionRouter } from "./src/modules/session/session.routes.ts";
+import { sessionRequestRouter } from "./src/domains/session-request/sessionRequest.routes.ts";
+import { sessionRouter } from "./src/domains/session/session.routes.ts";
+import { videoConfRouter } from "./src/domains/video-conf/videoConf.routes.ts";
+import cors from "cors";
 
 const app = express();
 
+app.use(cors({ origin: "*" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -32,8 +35,9 @@ app.use(notificationMiddleware);
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/skill", skillRouter);
-app.use('/api/session-request',sessionRequestRouter)
-app.use('/api/session',sessionRouter)
+app.use("/api/session-request", sessionRequestRouter);
+app.use("/api/session", sessionRouter);
+app.use("/api/video", videoConfRouter);
 
 app.use(errorHandler); //error handler
 
