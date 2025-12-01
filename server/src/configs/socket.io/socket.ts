@@ -1,8 +1,9 @@
-import { Server } from "socket.io";
+import {  Server} from "socket.io";
 import { getRedisClient } from "../redis/redis.ts";
 import type http from "http";
 import type { RequestHandler } from "express";
 import { verifyToken } from "../../utils/jwt.ts";
+import { videoNamespace } from "./videoSocket.ts";
 
 export default async function notificationSocket(
   server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>
@@ -21,6 +22,11 @@ export default async function notificationSocket(
 
   // namespace for notifications
   const notificationNamespace = io.of("/api/notification");
+
+  //  video namespace for handling video conf and webRTC
+  videoNamespace(io);
+
+  // handle connection
 
   notificationNamespace.on("connection", async (socket) => {
     const userId = socket.handshake.query.userId;
@@ -69,3 +75,5 @@ export default async function notificationSocket(
 
   return middleware;
 }
+
+export { videoNamespace };
