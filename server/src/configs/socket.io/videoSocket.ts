@@ -57,7 +57,7 @@ export const videoNamespace = async (
         [userId]: socket.id,
       });
 
-      socket.to(socket.id).emit("create-offer");
+      socket.emit("create-offer");
     } else {
       /*
         - In case room already exists, check if there is old socket conn
@@ -96,10 +96,10 @@ export const videoNamespace = async (
           otherParticipantSocket?.emit("re-connect");
           otherParticipantSocket?.disconnect();
         }
-        socket.to(socket.id).emit("create-offer");
+        socket.emit("create-offer");
       } else if (isRoomFull && offer && !answer) {
         // no need to re-initiate webrtc
-        socket.to(socket.id).emit("set-offer", offer);
+        socket.emit("set-offer", offer);
       } else if (isRoomFull && !offer && answer) {
         // answer without offer not useable
         await redis.del(`${roomId}:answer`);
@@ -109,7 +109,7 @@ export const videoNamespace = async (
         await redis.del(`${roomId}:offer`);
         await redis.del(`${roomId}:answer`);
 
-        socket.to(socket.id).emit("create-offer");
+        socket.emit("create-offer");
       }
     }
 
@@ -129,7 +129,7 @@ export const videoNamespace = async (
     });
 
     socket.on("answer", async (data) => {
-      redis.set(`${roomId}:answer`, data);
+      await redis.set(`${roomId}:answer`, data);
       // notify other socket about the answer
       const otherParticipantUserId = await getOtherParticipantUserId(
         redis,
@@ -137,11 +137,11 @@ export const videoNamespace = async (
         roomId,
       );
       if (otherParticipantUserId)
-        namespace.sockets.get(otherParticipantUserId)?.emit("set-answer");
+        namespace.sockets.get(otherParticipantUserId)?.emit("set-answer", data);
     });
 
     socket.on("offer-set-finished", () => {
-      socket.to(socket.id).emit("create-answer");
+      socket.emit("create-answer");
     });
 
     socket.on("answer-set-finished", () => {
@@ -158,8 +158,8 @@ const getOtherParticipantUserId = async (
   const participants = await redis.hGetAll(`${roomId}:participants`);
   if (!participants) return null;
   if (Object.keys(participants).length !== 2) return null;
-  let otherPariticipant = Object.keys(participants).find(
+  let otherUserId = Object.keys(participants).find(
     (key) => key !== currentUserId,
   );
-  return otherPariticipant;
+  return otherUserId;
 };
