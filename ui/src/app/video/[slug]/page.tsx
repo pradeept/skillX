@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export default function Video() {
   // get the slug (id)
-  const {slug} = useParams();
+  const { slug } = useParams();
   const [error, setError] = useState("");
 
   const fetchRoomId = async () => {
@@ -34,10 +34,10 @@ export default function Video() {
   // emit 'connected'
   // listen for 'createOffer'
   /*
-            - client will get stun and turn url along with 
+            - client will get stun and turn url along with
              short lived creds for turn
             - use that to create RTCPeerconnection
-            - generate ice candidates (once generate <promise> 
+            - generate ice candidates (once generate <promise>
               emit the offer)
         */
   // listen for 'createAnswer'

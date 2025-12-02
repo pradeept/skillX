@@ -1,14 +1,14 @@
-import type { DefaultEventsMap, Namespace, Server } from "socket.io";
-import { getRedisClient } from "../redis/redis.ts";
+import type { RedisClientType } from "@redis/client";
+import type { DefaultEventsMap, Server } from "socket.io";
 import z from "zod";
 import { verifyToken } from "../../utils/jwt.ts";
-import type { RedisClientType } from "@redis/client";
+import { getRedisClient } from "../redis/redis.ts";
 
 /*
     adapter => in-memory
 */
 export const videoNamespace = async (
-  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
 ) => {
   const namespace = io.of("/api/video");
 
@@ -47,14 +47,14 @@ export const videoNamespace = async (
     /*
       - if room does not exists, join new socket to roomId
       - set in redis roomId:participants :{ userId: socket.id}
-      - emit create-offer 
-      - listen for offer and set it in redis 
+      - emit create-offer
+      - listen for offer and set it in redis
     */
     if (!roomExists) {
       socket.join(roomId);
 
       await redis.hSet(`${roomId}:participants`, {
-        userId: socket.id,
+        [userId]: socket.id,
       });
 
       socket.to(socket.id).emit("create-offer");
@@ -63,7 +63,6 @@ export const videoNamespace = async (
         - In case room already exists, check if there is old socket conn
           for current userId, if so, disconnect it from namespace, add new conn
           and update in redis.
-        - Re-initiate webRTC
       */
       const oldSocket = await redis.hGet(`${roomId}:participants`, userId);
       if (oldSocket) {
@@ -74,7 +73,7 @@ export const videoNamespace = async (
 
       // add/update the key value (userId: socket.id)
       await redis.hSet(`${roomId}:participants`, {
-        userId: socket.id,
+        [userId]: socket.id,
       });
 
       const participants = await redis.hGetAll(`${roomId}:participants`);
@@ -83,13 +82,13 @@ export const videoNamespace = async (
       const offer = await redis.exists(`${roomId}:offer`);
       const answer = await redis.exists(`${roomId}:answer`);
 
-      // re-initiate the webRTC flow, bcz a socket re-connected
-      // and there is OFFER and ANSWER
+      // if room is full and there is already offer and answer
+      // then we need to re-instantiate webrtc
       if (isRoomFull && offer && answer) {
         const otherPariticipant = await getOtherParticipantUserId(
           redis,
           userId,
-          roomId
+          roomId,
         );
         if (otherPariticipant) {
           const otherParticipantSocket =
@@ -98,18 +97,23 @@ export const videoNamespace = async (
           otherParticipantSocket?.disconnect();
         }
         socket.to(socket.id).emit("create-offer");
-      } else if (offer && !answer) {
+      } else if (isRoomFull && offer && !answer) {
+        // no need to re-initiate webrtc
         socket.to(socket.id).emit("set-offer", offer);
-      } else if (!offer && answer) {
+      } else if (isRoomFull && !offer && answer) {
         // answer without offer not useable
         await redis.del(`${roomId}:answer`);
       } else {
         // room exists but not full
+        // precautionary del offer and answer
+        await redis.del(`${roomId}:offer`);
+        await redis.del(`${roomId}:answer`);
+
         socket.to(socket.id).emit("create-offer");
       }
     }
 
-    // listeners
+    // --- listeners ---
     socket.on("offer", async (data) => {
       await redis.hSet(`${roomId}:offer`, {
         offer: data,
@@ -118,7 +122,7 @@ export const videoNamespace = async (
       const otherParticipantUserId = await getOtherParticipantUserId(
         redis,
         userId,
-        roomId
+        roomId,
       );
       if (otherParticipantUserId)
         namespace.sockets.get(otherParticipantUserId)?.emit("set-offer");
@@ -130,7 +134,7 @@ export const videoNamespace = async (
       const otherParticipantUserId = await getOtherParticipantUserId(
         redis,
         userId,
-        roomId
+        roomId,
       );
       if (otherParticipantUserId)
         namespace.sockets.get(otherParticipantUserId)?.emit("set-answer");
@@ -143,22 +147,19 @@ export const videoNamespace = async (
     socket.on("answer-set-finished", () => {
       console.log("Both should be connected now!");
     });
-
-    namespace.adapter.rooms.get(roomId);
-    console.log("Socket id: ", socket.id);
   });
 };
 
 const getOtherParticipantUserId = async (
   redis: RedisClientType,
   currentUserId: string,
-  roomId: string
+  roomId: string,
 ) => {
   const participants = await redis.hGetAll(`${roomId}:participants`);
   if (!participants) return null;
   if (Object.keys(participants).length !== 2) return null;
   let otherPariticipant = Object.keys(participants).find(
-    (key) => key !== currentUserId
+    (key) => key !== currentUserId,
   );
   return otherPariticipant;
 };
