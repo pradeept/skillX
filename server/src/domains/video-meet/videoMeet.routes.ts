@@ -5,4 +5,4 @@ import { isAuthorized } from "../../middlewares/authorize.ts";
 
 export const videoConfRouter = Router();
 
-videoConfRouter.get("/:id", asyncHandler(handleMeet));
+videoConfRouter.get("/:id", isAuthorized, asyncHandler(handleMeet));

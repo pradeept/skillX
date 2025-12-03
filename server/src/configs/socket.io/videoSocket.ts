@@ -66,7 +66,7 @@ export const videoNamespace = async (
       */
       const oldSocket = await redis.hGet(`${roomId}:participants`, userId);
       if (oldSocket) {
-        io.sockets.sockets.get(oldSocket)?.disconnect();
+        namespace.sockets.get(oldSocket)?.disconnect();
       }
 
       socket.join(roomId);
@@ -125,7 +125,7 @@ export const videoNamespace = async (
         roomId,
       );
       if (otherParticipantUserId)
-        namespace.sockets.get(otherParticipantUserId)?.emit("set-offer");
+        namespace.sockets.get(otherParticipantUserId)?.emit("set-offer", data);
     });
 
     socket.on("answer", async (data) => {
