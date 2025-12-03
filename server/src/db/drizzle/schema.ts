@@ -35,7 +35,7 @@ export const User = pgTable("users", {
   password_hash: varchar({ length: 255 }).notNull(),
   bio: varchar({ length: 200 }),
   avatar_url: varchar({ length: 255 }).default(
-    "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+    "https://cdn-icons-png.flaticon.com/512/847/847969.png",
   ),
 
   // score
@@ -77,7 +77,7 @@ export const UserSkill = pgTable(
       .notNull(),
     type: skillTypeEnum("type").notNull(),
   },
-  (table) => [unique().on(table.skill_id, table.user_id, table.type)]
+  (table) => [unique().on(table.skill_id, table.user_id, table.type)],
 );
 
 // --- Session ---
@@ -156,7 +156,7 @@ export const Review = pgTable(
     rating: ratingEnum().default("0").notNull(),
     comment: varchar({ length: 50 }),
   },
-  (table) => [unique().on(table.session_id, table.reviewer_id)]
+  (table) => [unique().on(table.session_id, table.reviewer_id)],
 ); //one review per person
 
 // --- Points ---
@@ -198,11 +198,19 @@ export const Notifications = pgTable("notifications", {
 
 // for updating no_of_lessons_taught / learnt
 
-
 // NOTE: Ditching it for now as drizzle not yet supports
 // triggers and I don't want to complicate by integrating
 // libs like atlas .
 
-
 // -- Video Conferencing --
-
+export const VideoMeet = pgTable("video_meet", {
+  id: uuid().primaryKey().defaultRandom(),
+  participant_one: uuid()
+    .references(() => User.id)
+    .notNull(),
+  participant_two: uuid()
+    .references(() => User.id)
+    .notNull(),
+  isParticipantOneAttended: boolean().default(false),
+  isParticipantTwoAttended: boolean().default(false),
+});
