@@ -1,12 +1,24 @@
 "use client";
+import { socket } from "@/utils/socket";
+import { createOffer } from "@/utils/webRTC";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 export default function Video() {
   // get the slug (id)
   const { slug } = useParams();
   const [error, setError] = useState("");
-
+  const [meetId, setMeetId] = useState<string | null>(null);
+  const socket = io("http://localhost:3004/api/video", {
+    extraHeaders: {
+      Authorization: process.env.AUTH_TOKEN as string,
+    },
+    query: {
+      userId: process.env.USER_ID as string,
+      roomId: process.env.ROOM_ID as string,
+    },
+  });
   const fetchRoomId = async () => {
     try {
       const response = await fetch(`http://localhost:3004/api/video/${slug}`);
@@ -17,13 +29,22 @@ export default function Video() {
     }
   };
 
+  const connectSocket = async () => {
+    if (meetId) {
+      socket.connect();
+      socket.on("connection", () => {
+        console.log("[client] Socket connected");
+      });
+      // socket.on("create-offer", createOffer);
+    }
+  };
+
   useEffect(() => {
     fetchRoomId()
       .then((res) => res?.json())
-      .then((body) => console.log(body.data.roomId))
+      .then((body) => setMeetId(body.meetId))
       .catch((e) => setError("Failed to get the room Id"));
   });
-
   // make get request to
   // /api/video?id=slug
   // if response is okay & got roomId

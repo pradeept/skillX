@@ -3,6 +3,8 @@ import type { DefaultEventsMap, Server } from "socket.io";
 import z from "zod";
 import { verifyToken } from "../../utils/jwt.ts";
 import { getRedisClient } from "../redis/redis.ts";
+import { updateVideoMeet } from "../../domains/video-meet/videoMeet.service.ts";
+import { validateUser } from "./utils/validateUser.ts";
 
 /*
     adapter => in-memory
@@ -20,23 +22,9 @@ export const videoNamespace = async (
     const token = socket.handshake.headers.authorization;
 
     // validations
-    const videoSocketSchema = z.object({
-      userId: z.uuid(),
-      roomId: z.uuid(),
-    });
+    const isUserValid = validateUser(userId, roomId, token);
 
-    const validatedParams = videoSocketSchema.safeParse({
-      userId,
-      roomId,
-    });
-    if (!validatedParams.success || !token) {
-      socket.disconnect();
-      return;
-    }
-    const cleanToken = token.replace("Bearer ", "");
-    const jwtPayload: any = verifyToken(cleanToken);
-
-    if (!jwtPayload || jwtPayload.id !== userId) {
+    if (!isUserValid) {
       socket.disconnect();
       return;
     }

@@ -213,4 +213,5 @@ export const VideoMeet = pgTable("video_meet", {
     .notNull(),
   isParticipantOneAttended: boolean().default(false),
   isParticipantTwoAttended: boolean().default(false),
+  ...timestamps,
 });
