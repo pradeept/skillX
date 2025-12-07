@@ -9,14 +9,14 @@ export default function Video() {
   // get the slug (id)
   const { slug } = useParams();
   const [error, setError] = useState("");
-  const [meetId, setMeetId] = useState<string | null>(null);
+  // const [meetId, setMeetId] = useState<string | null>(null);
   const socket = io("http://localhost:3004/api/video", {
     extraHeaders: {
-      Authorization: process.env.AUTH_TOKEN as string,
+      Authorization: process.env.NEXT_PUBLIC_AUTH_TOKEN as string,
     },
     query: {
-      userId: process.env.USER_ID as string,
-      roomId: process.env.ROOM_ID as string,
+      userId: process.env.NEXT_PUBLIC_USER_ID as string,
+      roomId: process.env.NEXT_PUBLIC_ROOM_ID as string,
     },
   });
   const fetchRoomId = async () => {
@@ -28,22 +28,23 @@ export default function Video() {
       console.error(e);
     }
   };
-
-  const connectSocket = async () => {
-    if (meetId) {
-      socket.connect();
-      socket.on("connection", () => {
-        console.log("[client] Socket connected");
-      });
-      // socket.on("create-offer", createOffer);
-    }
+  const connectSocket = async (meetId: string | undefined) => {
+    // if (meetId) {
+    socket.connect();
+    socket.on("connect", () => {
+      console.log("[client] Socket connected");
+    });
+    // socket.on("create-offer", createOffer);
+    // }
   };
 
   useEffect(() => {
+    let meetId = undefined;
     fetchRoomId()
       .then((res) => res?.json())
-      .then((body) => setMeetId(body.meetId))
+      .then((body) => (meetId = body.meetId))
       .catch((e) => setError("Failed to get the room Id"));
+    connectSocket(meetId);
   });
   // make get request to
   // /api/video?id=slug

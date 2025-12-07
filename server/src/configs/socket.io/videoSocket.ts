@@ -17,7 +17,7 @@ export const videoNamespace = async (
   const redis = await getRedisClient();
 
   namespace.on("connection", async (socket) => {
-    const roomId = socket.handshake.query.id as string;
+    const roomId = socket.handshake.query.roomId as string;
     const userId = socket.handshake.query.userId as string;
     const token = socket.handshake.headers.authorization;
 
@@ -25,10 +25,11 @@ export const videoNamespace = async (
     const isUserValid = validateUser(userId, roomId, token);
 
     if (!isUserValid) {
+      console.error("Invalid User. Socket disconnected");
       socket.disconnect();
       return;
     }
-
+    console.log("[server] Connection recieved on namespace.");
     // --- check if the room exists ---
     const roomExists = namespace.adapter.rooms.get(roomId);
 
@@ -44,6 +45,8 @@ export const videoNamespace = async (
       await redis.hSet(`${roomId}:participants`, {
         [userId]: socket.id,
       });
+
+      await redis.expire(`${roomId}:participants`, 42000);
 
       socket.emit("create-offer");
     } else {

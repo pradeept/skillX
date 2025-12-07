@@ -24,7 +24,16 @@ export const createVideoMeet = async (sessionId: string) => {
   if (session.session_status !== "scheduled")
     new AppError("Invalid sessionId", 400);
 
-  // 3. check if session starts in 5 mins
+  // 3. check if there is a record with same session id
+  const isDuplicateSession = await db
+    .select()
+    .from(VideoMeet)
+    .where(eq(VideoMeet.session, sessionId));
+
+  if (isDuplicateSession[0]) {
+    return isDuplicateSession[0];
+  }
+  // 4. check if session starts in 5 mins
   const schedule = new Date(session.scheduled_datetime);
   const isValidSchedule = isWithinFiveMinutes(schedule);
 
@@ -40,6 +49,7 @@ export const createVideoMeet = async (sessionId: string) => {
     .values({
       participant_one: session.learner_id,
       participant_two: session.teacher_id,
+      session: sessionId,
     })
     .returning();
   return newVideo[0];
@@ -90,9 +100,17 @@ export const updateVideoMeet = async (id: string, userId: string) => {
 };
 
 // helper
-const isWithinFiveMinutes = (date: Date): boolean => {
+const isWithinFiveMinutes = (scheduledDateTime: Date): boolean => {
   const now = Date.now();
-  const diff = date.getTime() - now;
+  const curDate = new Date(now);
+  console.log(scheduledDateTime);
+  console.log(curDate);
+  const diffMs = scheduledDateTime.getTime() - curDate.getTime();
+  const diffMinutes = diffMs / 1000 / 60;
 
-  return diff >= 0 && diff <= 5 * 60 * 1000; // 5 minutes in ms
+  if (diffMinutes <= 5 && diffMinutes > 0) {
+    return true;
+  } else {
+    return false;
+  }
 };
