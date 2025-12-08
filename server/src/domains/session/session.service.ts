@@ -87,6 +87,7 @@ export const createSession = async (data: {
   schedule: Date;
 }) => {
   const { requestId, teacherId, learnerId, skillId, schedule } = data;
+  // const utcSchedule = new Date(schedule).toISOString();
   const newSession = await db
     .insert(Session)
     .values({
@@ -146,7 +147,7 @@ export const updateSessionStatus = async (
       .where(eq(Session.id, sessionId))
       .returning();
   } else {
-    // status - 'no_show' | 'cancelled' 
+    // status - 'no_show' | 'cancelled'
     updatedSession = await db
       .update(Session)
       .set({
@@ -155,9 +156,9 @@ export const updateSessionStatus = async (
       })
       .where(eq(Session.id, sessionId))
       .returning();
-      if(status === 'cancelled'){
-        //DEDUCT POINTS
-      }
+    if (status === "cancelled") {
+      //DEDUCT POINTS
+    }
   }
 
   return updatedSession[0];

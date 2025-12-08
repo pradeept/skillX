@@ -3,6 +3,8 @@ import type { DefaultEventsMap, Server } from "socket.io";
 import z from "zod";
 import { verifyToken } from "../../utils/jwt.ts";
 import { getRedisClient } from "../redis/redis.ts";
+import { updateVideoMeet } from "../../domains/video-meet/videoMeet.service.ts";
+import { validateUser } from "./utils/validateUser.ts";
 
 /*
     adapter => in-memory
@@ -15,32 +17,19 @@ export const videoNamespace = async (
   const redis = await getRedisClient();
 
   namespace.on("connection", async (socket) => {
-    const roomId = socket.handshake.query.id as string;
+    const roomId = socket.handshake.query.roomId as string;
     const userId = socket.handshake.query.userId as string;
     const token = socket.handshake.headers.authorization;
 
     // validations
-    const videoSocketSchema = z.object({
-      userId: z.uuid(),
-      roomId: z.uuid(),
-    });
+    const isUserValid = validateUser(userId, roomId, token);
 
-    const validatedParams = videoSocketSchema.safeParse({
-      userId,
-      roomId,
-    });
-    if (!validatedParams.success || !token) {
+    if (!isUserValid) {
+      console.error("Invalid User. Socket disconnected");
       socket.disconnect();
       return;
     }
-    const cleanToken = token.replace("Bearer ", "");
-    const jwtPayload: any = verifyToken(cleanToken);
-
-    if (!jwtPayload || jwtPayload.id !== userId) {
-      socket.disconnect();
-      return;
-    }
-
+    console.log("[server] Connection recieved on namespace.");
     // --- check if the room exists ---
     const roomExists = namespace.adapter.rooms.get(roomId);
 
@@ -56,6 +45,8 @@ export const videoNamespace = async (
       await redis.hSet(`${roomId}:participants`, {
         [userId]: socket.id,
       });
+
+      await redis.expire(`${roomId}:participants`, 42000);
 
       socket.emit("create-offer");
     } else {

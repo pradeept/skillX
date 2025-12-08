@@ -131,7 +131,7 @@ export const Session = pgTable("session", {
     .notNull(),
   skill_id: uuid().references(() => Skill.id, { onDelete: "set null" }),
 
-  scheduled_datetime: timestamp().notNull(),
+  scheduled_datetime: timestamp({ withTimezone: true }).notNull(),
   duration_minutes: smallint().default(60),
 
   session_status: sessionStatusEnum("status").default("scheduled").notNull(),
@@ -213,4 +213,8 @@ export const VideoMeet = pgTable("video_meet", {
     .notNull(),
   isParticipantOneAttended: boolean().default(false),
   isParticipantTwoAttended: boolean().default(false),
+  session: uuid()
+    .references(() => Session.id)
+    .notNull(),
+  ...timestamps,
 });

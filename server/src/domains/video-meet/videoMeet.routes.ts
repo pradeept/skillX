@@ -3,6 +3,6 @@ import { asyncHandler } from "../../middlewares/asyncHandler.ts";
 import { handleMeet } from "./videoMeet.controller.ts";
 import { isAuthorized } from "../../middlewares/authorize.ts";
 
-export const videoConfRouter = Router();
+export const videoMeetRouter = Router();
 
-videoConfRouter.get("/:id", isAuthorized, asyncHandler(handleMeet));
+videoMeetRouter.get("/:id", asyncHandler(handleMeet));
