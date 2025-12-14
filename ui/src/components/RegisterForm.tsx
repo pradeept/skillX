@@ -3,14 +3,17 @@
 import { FormEvent, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Github } from "lucide-react";
-import { Separator } from "./ui/separator";
-import { loginSchema } from "@/validators/login.schema";
+import { registerSchema } from "@/validators/register.schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-export default function LoginForm() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+export default function RegisterForm() {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    fullName: "",
+    confirmPassword: "",
+  });
   const navigate = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,29 +24,33 @@ export default function LoginForm() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const validatedForm = loginSchema.safeParse(formData);
+    const validatedForm = registerSchema.safeParse(formData);
     if (validatedForm.error) {
       const json = JSON.parse(validatedForm.error.message);
       toast.error("Invalid inputs", { description: json[0].message });
+    } else if (
+      validatedForm.data.password !== validatedForm.data.confirmPassword
+    ) {
+      toast.error("Invalid inputs", {
+        description: "Password and confirm password must be same",
+      });
     } else {
       const data = {
         email: validatedForm.data.email,
         password: validatedForm.data.password,
+        fullname: validatedForm.data.fullName,
       };
-      fetch(`${process.env.NEXT_PUBLIC_HOST}/auth/login`, {
+      fetch(`${process.env.NEXT_PUBLIC_HOST}/auth/register`, {
         method: "POST",
         body: new URLSearchParams(data),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
       })
-        .then((response) => {
-          if (!response.ok) {
-            response.json().then((res) => {
-              throw new Error(res.message);
+        .then((res) => {
+          if (!res.ok) {
+            res.json().then((r) => {
+              throw new Error(r.message);
             });
           }
-          return response.json();
+          return res.json();
         })
         .then((body) => {
           toast.success(body.message);
@@ -62,45 +69,40 @@ export default function LoginForm() {
     >
       <div className="flex flex-col w-full max-w-md p-3 gap-2">
         <Input
-          type="email"
+          type="text"
+          placeholder="Fullname"
+          name="fullName"
+          value={formData.fullName}
           onChange={handleChange}
+          required
+        />
+        <Input
+          type="email"
+          placeholder="Email"
           name="email"
           value={formData.email}
-          placeholder="Email"
+          onChange={handleChange}
+          required
         />
         <Input
           type="password"
-          onChange={handleChange}
-          value={formData.password}
-          name="password"
           placeholder="Password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+        <Input
+          type="password"
+          placeholder="Confirm Password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          required
         />
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        {/* SSO buttons */}
-        <div className="flex gap-3">
-          {/* Google */}
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 max-w-sm"
-            onClick={() => console.log("Login with Google")}
-          >
-            <span className="font-semibold text-lg">G</span>
-            Continue with Google
-          </Button>
-
-          {/* GitHub */}
-          <Button
-            variant="outline"
-            className="max-w-sm flex items-center gap-2"
-            onClick={() => console.log("Login with GitHub")}
-          >
-            <Github className="h-4 w-4" />
-            Continue with GitHub
-          </Button>
-        </div>
-        <Separator />
         <div className="w-full max-w-md flex items-center justify-center">
           <Button
             type="submit"
@@ -108,14 +110,14 @@ export default function LoginForm() {
               formData.email.length === 0 || formData.password.length === 0
             }
           >
-            Login
+            Register
           </Button>
         </div>
 
-        <span className="text-sm text-slate-100">
-          Don&apos;t have an account?{" "}
-          <a href="/register" className="text-blue-500 underline">
-            Register
+        <span className="text-sm text-slate-200">
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-500 underline">
+            Login
           </a>
         </span>
       </div>
