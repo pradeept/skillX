@@ -1,88 +1,100 @@
 "use client";
-import { socket } from "@/utils/socket";
-import { createOffer } from "@/utils/webRTC";
-import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import { useParams } from "next/navigation";
+import { useWebRTC } from "./_hook"; // Adjust path
+import { VideoPlayer } from "./_videoStream"; // Adjust path
 
-export default function Video() {
-  // get the slug (id)
+export default function VideoRoom() {
   const { slug } = useParams();
-  const [error, setError] = useState("");
-  // const [meetId, setMeetId] = useState<string | null>(null);
-  const socket = io("http://localhost:3004/api/video", {
-    extraHeaders: {
-      Authorization: process.env.NEXT_PUBLIC_AUTH_TOKEN as string,
-    },
-    query: {
-      userId: process.env.NEXT_PUBLIC_USER_ID as string,
-      roomId: process.env.NEXT_PUBLIC_ROOM_ID as string,
-    },
-  });
-  const fetchRoomId = async () => {
-    try {
-      const response = await fetch(`http://localhost:3004/api/video/${slug}`);
-      console.log(response);
-      return response;
-    } catch (e) {
-      console.error(e);
-    }
-  };
-  const connectSocket = async (meetId: string | undefined) => {
-    // if (meetId) {
-    socket.connect();
-    socket.on("connect", () => {
-      console.log("[client] Socket connected");
-    });
-    // socket.on("create-offer", createOffer);
-    // }
-  };
+  const [meetId, setMeetId] = useState<string | null>(null);
+  const [apiError, setApiError] = useState("");
 
+  // Dummy User ID - replace with real logic/context
+  const userId = process.env.NEXT_PUBLIC_USER_ID || "user_123";
+
+  // 1. Fetch Room ID on mount
   useEffect(() => {
-    let meetId = undefined;
-    fetchRoomId()
-      .then((res) => res?.json())
-      .then((body) => (meetId = body.meetId))
-      .catch((e) => setError("Failed to get the room Id"));
-    connectSocket(meetId);
-  });
-  // make get request to
-  // /api/video?id=slug
-  // if response is okay & got roomId
-  // else show error page statating (Please join before 5 mins of the video meet
-  // schedule!)
+    const fetchRoom = async () => {
+      try {
+        const res = await fetch(`http://localhost:3004/api/video/${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          console.log(data.data.meetId);
+          setMeetId(data.data.meetId);
+        } else {
+          setApiError("Please join before 5 mins of the video meet schedule!");
+        }
+      } catch (e) {
+        setApiError("Failed to connect to video service.");
+      }
+    };
 
-  // make socket connection at /api/video/roomId
-  // emit 'connected'
-  // listen for 'createOffer'
-  /*
-            - client will get stun and turn url along with
-             short lived creds for turn
-            - use that to create RTCPeerconnection
-            - generate ice candidates (once generate <promise>
-              emit the offer)
-        */
-  // listen for 'createAnswer'
-  // listen for 'offer'
-  // listen for 'answer'
+    if (slug) fetchRoom();
+  }, [slug]);
+
+  // 2. Initialize WebRTC Logic (only runs when meetId is present)
+  const { localStream, remoteStream, connectionStatus } = useWebRTC(
+    meetId,
+    userId,
+  );
+
+  if (apiError) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900 text-red-400">
+        <div className="bg-gray-800 p-8 rounded-lg shadow-xl border border-red-500/30">
+          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+          <p>{apiError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!meetId) {
+    return (
+      <div className="h-screen flex items-center justify-center text-white">
+        Loading Room Details...
+      </div>
+    );
+  }
+
   return (
-    <>
-      <section>
-        <div>
-          <p>User1</p>
+    <main className="min-h-screen bg-neutral-900 p-4 flex flex-col items-center">
+      {/* Status Bar */}
+      <div className="w-full max-w-6xl mb-4 flex justify-between items-center text-white px-4">
+        <h1 className="text-xl font-bold">Meeting Room: {slug}</h1>
+        <div className="flex items-center gap-2">
+          <span
+            className={`h-2 w-2 rounded-full ${remoteStream ? "bg-green-500" : "bg-yellow-500"}`}
+          ></span>
+          <span className="text-sm opacity-70">{connectionStatus}</span>
         </div>
-        <div>
-          <p>Remote user</p>
+      </div>
+
+      {/* Video Grid - Vertical on Mobile, Horizontal on Desktop */}
+      <div className="flex-1 w-full max-w-6xl flex flex-col md:flex-row gap-4 h-[80vh]">
+        {/* Local User */}
+        <div className="flex-1 w-full md:w-1/2 h-full">
+          <VideoPlayer stream={localStream} isLocal={true} />
         </div>
-        {error && <p>Get request failed</p>}
-      </section>
-      {/* current user's video and audio  */}
-      {/* Controls will be added later */}
 
-      {/* --------------------------- */}
+        {/* Remote User */}
+        <div className="flex-1 w-full md:w-1/2 h-full">
+          {remoteStream ? (
+            <VideoPlayer stream={remoteStream} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-800 rounded-xl border border-dashed border-gray-600">
+              <p className="text-gray-400 animate-pulse">
+                Waiting for peer to join...
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* remote user's video and audio  */}
-      {/* Controls will not be shown for remote user */}
-    </>
+      {/* Controls Bar (Placeholder for future) */}
+      <div className="mt-6 flex gap-4">
+        {/* Add Mute/Camera/Hangup buttons here */}
+      </div>
+    </main>
   );
 }

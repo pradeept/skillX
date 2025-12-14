@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import LenisProvider from "../components/LenisProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "SkillBull",
@@ -21,10 +23,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
+    <html lang="en" suppressHydrationWarning>
       <body className={` antialiased`}>
-        <LenisProvider />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <LenisProvider />
+          {children}
+        </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );
