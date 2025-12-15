@@ -4,16 +4,8 @@ export const createOffer = async () => {
   const turnUser = process.env.TURN_USER as string;
   const turnCredential = process.env.TURN_PASSWORD as string;
 
-  const rc = new RTCPeerConnection({
-    iceServers: [
-      {
-        urls: stun,
-      },
-      {
-        urls: turn,
-        username: turnUser,
-        credential: turnCredential,
-      },
-    ],
-  });
+  const rc = new RTCPeerConnection({});
 };
+// NEED TO FIX
+const configEnv = process.env.NEXT_PUBLIC_ICE_URLS as string;
+export const config = JSON.parse(configEnv);

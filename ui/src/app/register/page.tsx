@@ -19,14 +19,16 @@ export default function RegisterPage() {
             id="cover-image"
             className="w-full h-screen hidden lg:block"
           />
-          <label
-            htmlFor="cover-image"
-            className="absolute bottom-5 text-slate-400 right-4 underline"
-          >
-            <a href="https://unsplash.com/photos/gray-and-blue-concrete-tunnel-at-daytime-VNQl_4OmZJw">
+          <div className="absolute bottom-5 text-zinc-500 dark:text-zinc-400 right-4 text-sm">
+            <a
+              href="https://unsplash.com/photos/gray-and-blue-concrete-tunnel-at-daytime-VNQl_4OmZJw"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-zinc-700 dark:hover:text-zinc-300"
+            >
               Unsplash
             </a>
-          </label>
+          </div>
         </section>
         {/* form */}
         <RegisterForm />

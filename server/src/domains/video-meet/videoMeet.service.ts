@@ -101,16 +101,10 @@ export const updateVideoMeet = async (id: string, userId: string) => {
 
 // helper
 const isWithinFiveMinutes = (scheduledDateTime: Date): boolean => {
-  const now = Date.now();
-  const curDate = new Date(now);
-  console.log(scheduledDateTime);
-  console.log(curDate);
-  const diffMs = scheduledDateTime.getTime() - curDate.getTime();
-  const diffMinutes = diffMs / 1000 / 60;
+  const nowUtc = Date.now();
+  const scheduledUtc = scheduledDateTime.getTime();
 
-  if (diffMinutes <= 5 && diffMinutes > 0) {
-    return true;
-  } else {
-    return false;
-  }
+  const diffMinutes = (scheduledUtc - nowUtc) / 1000 / 60;
+
+  return diffMinutes <= 5 && diffMinutes > 0;
 };

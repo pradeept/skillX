@@ -8,10 +8,9 @@ import { comparePassword, hashPassword } from "../../utils/cypt.ts";
 export const login = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const body = req.body;
-
   //zod validation and errors handled by global error handler
   if (!body || !body.email || !body.password) {
     return next(new AppError("email and password are required", 400));
@@ -42,7 +41,7 @@ export const login = async (
 
     const isPasswordValid = await comparePassword(
       validatedBody.password,
-      password_hash
+      password_hash,
     );
 
     if (isPasswordValid && account_status === "active") {
@@ -62,12 +61,13 @@ export const login = async (
         status: "success",
         message: "Login Successful",
         user: {
+          userId: id,
           email,
-          full_name,
+          fullName: full_name,
           bio,
-          avatar_url,
-          total_lessons_learned,
-          total_lessons_taught,
+          avatar: avatar_url,
+          totalLessonsLearned: total_lessons_learned,
+          totalLessonsTaught: total_lessons_taught,
           points,
           level,
         },
@@ -82,7 +82,7 @@ export const login = async (
 export const register = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const body = req.body; // x-www-form-urlencoded
 
