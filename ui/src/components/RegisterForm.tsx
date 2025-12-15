@@ -6,6 +6,9 @@ import { Button } from "./ui/button";
 import { registerSchema } from "@/validators/register.schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { backend } from "@/utils/axiosConfig";
+import { Spinner } from "./ui/spinner";
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -16,6 +19,23 @@ export default function RegisterForm() {
   });
   const navigate = useRouter();
 
+  const registerMutation = useMutation({
+    mutationFn: (data: {
+      email: string;
+      password: string;
+      fullname: string;
+    }) => {
+      return backend.post("/auth/register", data);
+    },
+    onSuccess: (res) => {
+      toast.success(res.data.message);
+      navigate.push("/login");
+    },
+    onError: (err) => {
+      console.error(err.message);
+      toast.error("Something went wrong!", { description: err.message });
+    },
+  });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (!name) return;
@@ -40,26 +60,7 @@ export default function RegisterForm() {
         password: validatedForm.data.password,
         fullname: validatedForm.data.fullName,
       };
-      fetch(`${process.env.NEXT_PUBLIC_HOST}/auth/register`, {
-        method: "POST",
-        body: new URLSearchParams(data),
-      })
-        .then((res) => {
-          if (!res.ok) {
-            res.json().then((r) => {
-              throw new Error(r.message);
-            });
-          }
-          return res.json();
-        })
-        .then((body) => {
-          toast.success(body.message);
-          navigate.push("/profile");
-        })
-        .catch((e) => {
-          console.error(e);
-          toast.error(e.message);
-        });
+      registerMutation.mutate(data);
     }
   };
   return (
@@ -107,14 +108,17 @@ export default function RegisterForm() {
           <Button
             type="submit"
             disabled={
-              formData.email.length === 0 || formData.password.length === 0
+              formData.email.length === 0 ||
+              formData.password.length === 0 ||
+              registerMutation.isPending
             }
           >
+            {registerMutation.isPending && <Spinner />}
             Register
           </Button>
         </div>
 
-        <span className="text-sm text-slate-200">
+        <span className="text-sm dark:text-slate-200">
           Already have an account?{" "}
           <a href="/login" className="text-blue-500 underline">
             Login

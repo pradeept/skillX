@@ -4,12 +4,10 @@ import { ArrowRight } from "lucide-react";
 import Logo from "./Logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ModeToggle } from "./ModeToggle";
+import { useNotificationSocket } from "@/hooks/useNotification";
 
 export default function Navbar() {
   const path = usePathname();
-  console.log(path);
-  console.log(path);
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-b border-zinc-200 dark:border-zinc-800">
       <div className="flex items-center gap-2">

@@ -3,15 +3,35 @@
 import { FormEvent, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Github } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { loginSchema } from "@/validators/login.schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { backend } from "@/utils/axiosConfig";
+import { Spinner } from "./ui/spinner";
+import useUserStore from "@/store/userStore";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useRouter();
+
+  const setUserInfo = useUserStore((state) => state.setUserInfo);
+
+  const loginMutation = useMutation({
+    mutationFn: (data: { email: string; password: string }) => {
+      return backend.post("/auth/login", data);
+    },
+    onSuccess: (res) => {
+      toast.success(res.data.message);
+      setUserInfo(res.data.user);
+      navigate.push("/profile");
+    },
+    onError: (err) => {
+      console.error(err.message);
+      toast.error("Something went wrong!", { description: err.message });
+    },
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -19,40 +39,14 @@ export default function LoginForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const validatedForm = loginSchema.safeParse(formData);
     if (validatedForm.error) {
       const json = JSON.parse(validatedForm.error.message);
       toast.error("Invalid inputs", { description: json[0].message });
     } else {
-      const data = {
-        email: validatedForm.data.email,
-        password: validatedForm.data.password,
-      };
-      fetch(`${process.env.NEXT_PUBLIC_HOST}/auth/login`, {
-        method: "POST",
-        body: new URLSearchParams(data),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            response.json().then((res) => {
-              throw new Error(res.message);
-            });
-          }
-          return response.json();
-        })
-        .then((body) => {
-          toast.success(body.message);
-          navigate.push("/profile");
-        })
-        .catch((e) => {
-          console.error(e);
-          toast.error(e.message);
-        });
+      loginMutation.mutate(validatedForm.data);
     }
   };
   return (
@@ -80,39 +74,35 @@ export default function LoginForm() {
       <div className="flex flex-col items-center gap-3">
         {/* SSO buttons */}
         <div className="flex gap-3">
-          {/* Google */}
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 max-w-sm"
-            onClick={() => console.log("Login with Google")}
-          >
-            <span className="font-semibold text-lg">G</span>
-            Continue with Google
-          </Button>
-
           {/* GitHub */}
-          <Button
+          {/*<Button
             variant="outline"
             className="max-w-sm flex items-center gap-2"
             onClick={() => console.log("Login with GitHub")}
           >
             <Github className="h-4 w-4" />
             Continue with GitHub
-          </Button>
+          </Button>*/}
+          <small className="font-light text-slate-400">
+            (SSO coming soon!)
+          </small>
         </div>
         <Separator />
         <div className="w-full max-w-md flex items-center justify-center">
           <Button
             type="submit"
             disabled={
-              formData.email.length === 0 || formData.password.length === 0
+              formData.email.length === 0 ||
+              formData.password.length === 0 ||
+              loginMutation.isPending
             }
           >
+            {loginMutation.isPending && <Spinner />}
             Login
           </Button>
         </div>
 
-        <span className="text-sm text-slate-100">
+        <span className="text-sm dark:text-slate-100">
           Don&apos;t have an account?{" "}
           <a href="/register" className="text-blue-500 underline">
             Register

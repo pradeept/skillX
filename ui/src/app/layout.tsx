@@ -3,18 +3,19 @@ import "./globals.css";
 import LenisProvider from "../components/LenisProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import QueryProvider from "./_queryProvider";
 
 export const metadata: Metadata = {
-  title: "SkillBull",
+  title: "SkillX",
   description:
-    "SkillBull is a skill exchange platform. Here users can barter their skills or share their skills as a community service.",
+    "SkillX is a skill exchange platform. Here users can barter their skills or share their skills as a community service.",
   keywords: [
     "skillbull",
     "skillswap",
     "skill exchange platform",
     "skill barter",
   ],
-  applicationName: "SkillBull",
+  applicationName: "SkillX",
 };
 
 export default function RootLayout({
@@ -25,16 +26,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={` antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <LenisProvider />
-          {children}
-        </ThemeProvider>
-        <Toaster />
+        <QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <LenisProvider />
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
