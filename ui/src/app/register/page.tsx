@@ -1,13 +1,11 @@
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import registerCover from "@/../public/registerCover.png";
-import RegisterForm from "@/components/RegisterForm";
-import Navbar from "@/components/NavBar";
+import RegisterForm from "@/components/auth/RegisterForm";
 
 export default function RegisterPage() {
   return (
     <>
-      <Navbar />
       <section className="grid grid-cols-1 md:grid-cols-2 overflow-x-hidden">
         {/* cover image */}
         <section className="relative">

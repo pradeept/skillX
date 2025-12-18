@@ -1,5 +1,8 @@
 "use client";
+import Navbar from "@/components/navbar/NavBar";
 import { useNotificationSocket } from "@/hooks/useNotification";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Profile() {
   // notification socket
@@ -8,7 +11,12 @@ export default function Profile() {
   // UI:
   // allow profile editing
   // implement profile updating api call
-  const socketClient = useNotificationSocket();
-
-  return <>Hello there</>;
+  // useNotificationSocket();
+  const socket = useNotificationSocket();
+  return (
+    <>
+      <Navbar />
+      <p>Status: {socket.current?.connected ? "🟢 Online" : "🔴 Offline"}</p>
+    </>
+  );
 }

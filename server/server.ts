@@ -12,6 +12,7 @@ import { sessionRequestRouter } from "./src/domains/session-request/sessionReque
 import { sessionRouter } from "./src/domains/session/session.routes.ts";
 import { videoMeetRouter } from "./src/domains/video-meet/videoMeet.routes.ts";
 import cors from "cors";
+import { notificationRouter } from "./src/domains/notification/notification.routes.ts";
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use(notificationMiddleware);
 // routes
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/notification", notificationRouter);
 app.use("/api/skill", skillRouter);
 app.use("/api/session-request", sessionRequestRouter);
 app.use("/api/session", sessionRouter);

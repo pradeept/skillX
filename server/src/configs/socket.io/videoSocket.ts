@@ -1,19 +1,12 @@
-import type { RedisClientType } from "@redis/client";
+import type { RedisClientType } from "redis";
 import type { DefaultEventsMap, Server } from "socket.io";
-import z from "zod";
-import { verifyToken } from "../../utils/jwt.ts";
 import { getRedisClient } from "../redis/redis.ts";
-import { updateVideoMeet } from "../../domains/video-meet/videoMeet.service.ts";
 import { validateUser } from "./utils/validateUser.ts";
 
-/*
-    adapter => in-memory
-*/
 export const videoNamespace = async (
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
 ) => {
   const namespace = io.of("/api/video");
-
   const redis = await getRedisClient();
 
   namespace.on("connection", async (socket) => {
@@ -21,136 +14,165 @@ export const videoNamespace = async (
     const userId = socket.handshake.query.userId as string;
     const token = socket.handshake.headers.authorization;
 
-    // validations
+    // 1. Validation
     const isUserValid = validateUser(userId, roomId, token);
-
     if (!isUserValid) {
-      console.error("Invalid User. Socket disconnected");
+      console.error(`[Server] Invalid User ${userId}. Disconnecting.`);
+      socket.emit("error", "Invalid Credentials");
       socket.disconnect();
       return;
     }
-    console.log("[server] Connection recieved on namespace.");
-    // --- check if the room exists ---
-    const roomExists = namespace.adapter.rooms.get(roomId);
 
-    /*
-      - if room does not exists, join new socket to roomId
-      - set in redis roomId:participants :{ userId: socket.id}
-      - emit create-offer
-      - listen for offer and set it in redis
-    */
-    if (!roomExists) {
-      socket.join(roomId);
+    console.log(`[Server] User ${userId} connected to room ${roomId}`);
 
-      await redis.hSet(`${roomId}:participants`, {
-        [userId]: socket.id,
-      });
+    // 2. Handle Connection / Reconnection
+    // Check if room exists in Redis (using the participants hash as the source of truth)
+    const participantsKey = `${roomId}:participants`;
+    const offerKey = `${roomId}:offer`;
+    const answerKey = `${roomId}:answer`;
 
-      await redis.expire(`${roomId}:participants`, 42000);
+    // Remove any old socket for this specific user (handle page refresh)
+    const oldSocketId = await redis.hGet(participantsKey, userId);
+    if (oldSocketId) {
+      const oldSocket = namespace.sockets.get(oldSocketId);
+      if (oldSocket) oldSocket.disconnect();
+    }
+
+    // Join the Socket.io room
+    socket.join(roomId);
+
+    // Register new socket in Redis
+    await redis.hSet(participantsKey, userId, socket.id);
+    await redis.expire(participantsKey, 3600); // 1 hour expiry
+
+    // 3. Determine Role (Offerer vs Answerer)
+    const participants = await redis.hGetAll(participantsKey);
+    const participantCount = Object.keys(participants).length;
+
+    if (participantCount === 1) {
+      // First user: Needs to create the offer
+      console.log(
+        `[Server] User ${userId} is the first participant. Requesting Offer.`,
+      );
+
+      // Clean up any stale signaling data from previous sessions
+      await redis.del(offerKey);
+      await redis.del(answerKey);
 
       socket.emit("create-offer");
     } else {
-      /*
-        - In case room already exists, check if there is old socket conn
-          for current userId, if so, disconnect it from namespace, add new conn
-          and update in redis.
-      */
-      const oldSocket = await redis.hGet(`${roomId}:participants`, userId);
-      if (oldSocket) {
-        namespace.sockets.get(oldSocket)?.disconnect();
-      }
+      // Second user: Check if there is an existing offer to consume
+      console.log(`[Server] User ${userId} joined as second participant.`);
 
-      socket.join(roomId);
+      const existingOffer = await redis.get(offerKey);
 
-      // add/update the key value (userId: socket.id)
-      await redis.hSet(`${roomId}:participants`, {
-        [userId]: socket.id,
-      });
-
-      const participants = await redis.hGetAll(`${roomId}:participants`);
-      const isRoomFull = Object.keys(participants).length === 2;
-
-      const offer = await redis.exists(`${roomId}:offer`);
-      const answer = await redis.exists(`${roomId}:answer`);
-
-      // if room is full and there is already offer and answer
-      // then we need to re-instantiate webrtc
-      if (isRoomFull && offer && answer) {
-        const otherPariticipant = await getOtherParticipantUserId(
-          redis,
-          userId,
-          roomId,
-        );
-        if (otherPariticipant) {
-          const otherParticipantSocket =
-            namespace.sockets.get(otherPariticipant);
-          otherParticipantSocket?.emit("re-connect");
-          otherParticipantSocket?.disconnect();
-        }
-        socket.emit("create-offer");
-      } else if (isRoomFull && offer && !answer) {
-        // no need to re-initiate webrtc
-        socket.emit("set-offer", offer);
-      } else if (isRoomFull && !offer && answer) {
-        // answer without offer not useable
-        await redis.del(`${roomId}:answer`);
+      if (existingOffer) {
+        console.log(`[Server] Sending existing offer to User ${userId}`);
+        // Send the actual SDP data, not the existence boolean
+        socket.emit("set-offer", JSON.parse(existingOffer));
       } else {
-        // room exists but not full
-        // precautionary del offer and answer
-        await redis.del(`${roomId}:offer`);
-        await redis.del(`${roomId}:answer`);
-
-        socket.emit("create-offer");
+        // Edge case: 2nd user joined, but 1st user hasn't created offer yet.
+        // Do nothing. The 1st user will emit 'offer' soon, which we handle below.
       }
     }
 
-    // --- listeners ---
+    // --- EVENT LISTENERS ---
+
+    // A. Handle Offer
     socket.on("offer", async (data) => {
-      await redis.hSet(`${roomId}:offer`, {
-        offer: data,
-      });
-      // notify other user
-      const otherParticipantUserId = await getOtherParticipantUserId(
+      console.log(`[Server] Received Offer from ${userId}`);
+      // Store as string
+      await redis.set(offerKey, JSON.stringify(data));
+      await redis.expire(offerKey, 3600);
+
+      // Relay to the other person
+      const otherSocketId = await getOtherParticipantSocketId(
         redis,
         userId,
         roomId,
       );
-      if (otherParticipantUserId)
-        namespace.sockets.get(otherParticipantUserId)?.emit("set-offer", data);
+      if (otherSocketId) {
+        namespace.to(otherSocketId).emit("set-offer", data);
+      }
     });
 
+    // B. Handle Answer
     socket.on("answer", async (data) => {
-      await redis.set(`${roomId}:answer`, data);
-      // notify other socket about the answer
-      const otherParticipantUserId = await getOtherParticipantUserId(
+      console.log(`[Server] Received Answer from ${userId}`);
+      await redis.set(answerKey, JSON.stringify(data));
+      await redis.expire(answerKey, 3600);
+
+      // Relay to the other person
+      const otherSocketId = await getOtherParticipantSocketId(
         redis,
         userId,
         roomId,
       );
-      if (otherParticipantUserId)
-        namespace.sockets.get(otherParticipantUserId)?.emit("set-answer", data);
+      if (otherSocketId) {
+        namespace.to(otherSocketId).emit("set-answer", data);
+      }
     });
 
+    // C. Handle ICE Candidates (CRITICAL MISSING FEATURE ADDED)
+    socket.on("ice-candidate", async (candidate) => {
+      // console.log(`[Server] Relay ICE Candidate from ${userId}`);
+      const otherSocketId = await getOtherParticipantSocketId(
+        redis,
+        userId,
+        roomId,
+      );
+      if (otherSocketId) {
+        namespace.to(otherSocketId).emit("ice-candidate", candidate);
+      }
+    });
+
+    // D. Signaling Steps
     socket.on("offer-set-finished", () => {
-      socket.emit("create-answer");
+      // The client has set the REMOTE description (Offer). Now they must create an Answer.
+      socket.emit(
+        "create-answer" /* pass offer if needed, but client usually has it in state */,
+      );
     });
 
     socket.on("answer-set-finished", () => {
-      console.log("Both should be connected now!");
+      console.log("[Server] WEBRTC Connection Sequence Finished.");
+    });
+
+    // E. Disconnect Cleanup
+    socket.on("disconnect", async () => {
+      console.log(`[Server] User ${userId} disconnected`);
+      // Optional: Remove from redis immediately or let it expire?
+      // Usually better to keep it briefly in case of quick refresh,
+      // but strictly following your logic, we might want to notify the peer.
+      const otherSocketId = await getOtherParticipantSocketId(
+        redis,
+        userId,
+        roomId,
+      );
+      if (otherSocketId) {
+        // Optional: Notify peer that user left
+        // namespace.to(otherSocketId).emit("peer-disconnected");
+      }
     });
   });
 };
 
-const getOtherParticipantUserId = async (
+/**
+ * Helper: Gets the Socket ID of the OTHER participant in the room.
+ */
+const getOtherParticipantSocketId = async (
   redis: RedisClientType,
   currentUserId: string,
   roomId: string,
 ) => {
   const participants = await redis.hGetAll(`${roomId}:participants`);
   if (!participants) return null;
-  if (Object.keys(participants).length !== 2) return null;
-  let otherUserId = Object.keys(participants).find(
-    (key) => key !== currentUserId,
+
+  // Find the entry where the Key (UserId) is NOT the currentUserId
+  const otherUserEntry = Object.entries(participants).find(
+    ([uid, _socketId]) => uid !== currentUserId,
   );
-  return otherUserId;
+
+  // Return the Value (SocketId)
+  return otherUserEntry ? otherUserEntry[1] : null;
 };

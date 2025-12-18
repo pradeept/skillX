@@ -1,5 +1,5 @@
 import { Github, Linkedin, Twitter } from "lucide-react";
-import Logo from "./Logo";
+import Logo from "./misc/Logo";
 import { ModeToggle } from "./ModeToggle";
 
 export default function Footer() {

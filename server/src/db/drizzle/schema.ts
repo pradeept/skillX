@@ -192,6 +192,7 @@ export const Notifications = pgTable("notifications", {
     .notNull(),
   message: varchar({ length: 255 }).notNull(),
   read: boolean().default(false).notNull(),
+  ...timestamps,
 });
 
 // -- Triggers --
