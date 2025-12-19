@@ -60,7 +60,7 @@ export const findOneSessionWithReview = async (sessionId: string) => {
       .where(eq(Session.id, sessionId));
 
     const reviews = await tx
-      .select({})
+      .select()
       .from(Review)
       .where(eq(Review.session_id, sessionId));
 

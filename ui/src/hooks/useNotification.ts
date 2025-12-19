@@ -1,8 +1,10 @@
 "use client";
 
+import useNotificationStore from "@/store/notificationStore";
 import useUserStore from "@/store/userStore";
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { toast } from "sonner";
 
 const SOCKET_URL = `${process.env.NEXT_PUBLIC_HOST}/notification`;
 
@@ -12,7 +14,7 @@ export const useNotificationSocket = (
   const socketRef = useRef<Socket | null>(null);
   const userId = useUserStore((state) => state.userInfo?.userId);
 
-  console.log(userId);
+  const { addNotification } = useNotificationStore((state) => state);
 
   useEffect(() => {
     if (!SOCKET_URL) {
@@ -35,8 +37,28 @@ export const useNotificationSocket = (
       console.log("[client] Notification socket connected");
     });
 
-    socket.on("notification", (message: string) => {
-      onNotification?.(message);
+    socket.on("verified", () => {
+      console.log(userId);
+      socket.emit("get_notifications", userId);
+    });
+
+    socket.on(
+      "notification",
+      (newNotification: {
+        message: string;
+        createdAt: Date;
+        read: boolean;
+        id: string;
+      }) => {
+        addNotification(newNotification);
+      },
+    );
+    socket.off("top_notifications");
+    socket.on("top_notifications", (notifications: []) => {
+      console.log(notifications);
+      notifications.forEach((notification) => {
+        addNotification(notification);
+      });
     });
 
     socket.on("disconnect", (reason) => {
@@ -45,6 +67,7 @@ export const useNotificationSocket = (
 
     socket.on("error", (res) => {
       console.error(res.message);
+      toast.error(`Failed to fetch notifications`);
     });
 
     socket.on("connect_error", (err) => {

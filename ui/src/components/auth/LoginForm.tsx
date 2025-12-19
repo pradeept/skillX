@@ -1,16 +1,18 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 import { loginSchema } from "@/validators/login.schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { backend } from "@/utils/axiosConfig";
-import { Spinner } from "./ui/spinner";
+import { Spinner } from "../ui/spinner";
 import useUserStore from "@/store/userStore";
+import Image from "next/image";
+import logo from "@/../public/logo.png";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -54,6 +56,8 @@ export default function LoginForm() {
       onSubmit={handleSubmit}
       className="flex flex-col gap-4 w-full items-center justify-center min-h-screen"
     >
+      <Image src={logo} width={44} height={44} alt="Logo" />
+
       <div className="flex flex-col w-full max-w-md p-3 gap-2">
         <Input
           type="email"

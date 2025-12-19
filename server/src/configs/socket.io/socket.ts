@@ -5,6 +5,8 @@ import type { RequestHandler } from "express";
 import { verifyToken } from "../../utils/jwt.ts";
 import { videoNamespace } from "./videoSocket.ts";
 import cookie from "cookie";
+import { fetchTopNotifications } from "../../domains/notification/notification.service.ts";
+import type { NotificationType } from "../../types/notification.js";
 
 export default async function notificationSocket(
   server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
@@ -28,7 +30,6 @@ export default async function notificationSocket(
   videoNamespace(io);
 
   // handle connection
-
   notificationNamespace.on("connection", async (socket) => {
     const { userId } = socket.handshake.auth;
     const rawCookie = socket.handshake.headers.cookie;
@@ -49,8 +50,6 @@ export default async function notificationSocket(
       token = decodeURIComponent(token);
     }
 
-    console.log("userId: ", userId);
-    console.log("token: ", token);
     if (!token) {
       console.log("❌ Token not provided,disconnecting the connection");
       socket.emit("error", {
@@ -80,6 +79,18 @@ export default async function notificationSocket(
     // join a private room for targeted notifications
     socket.join(`user:${userId}`);
 
+    // tell varification is done & you can fetch
+    // your notifications
+    socket.emit("verified");
+
+    socket.on("get_notifications", async (userId) => {
+      if (!userId) {
+        socket.emit("error", "Invalid User Id");
+      }
+      const notifications = await fetchTopNotifications(userId);
+      socket.emit("top_notifications", notifications);
+    });
+
     // handle disconnection and status updation
     socket.on("disconnect", async () => {
       console.log(`User ${userId} disconnected`);
@@ -87,8 +98,10 @@ export default async function notificationSocket(
     });
   });
 
-  const notify = async (userId: string, message: string) => {
-    notificationNamespace.to(`user:${userId}`).emit("notification", message);
+  const notify = async (userId: string, newNotification: NotificationType) => {
+    notificationNamespace
+      .to(`user:${userId}`)
+      .emit("notification", newNotification);
     return true;
   };
 

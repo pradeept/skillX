@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import LenisProvider from "../components/LenisProvider";
+import LenisProvider from "../components/misc/LenisProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import QueryProvider from "./_queryProvider";
+import { NotificationProvider } from "@/providers/notificationProvider";
 
 export const metadata: Metadata = {
   title: "SkillX",
@@ -33,9 +34,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <LenisProvider />
-            {children}
-            <Toaster />
+            <NotificationProvider>
+              <LenisProvider />
+              {children}
+              <Toaster />
+            </NotificationProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>
