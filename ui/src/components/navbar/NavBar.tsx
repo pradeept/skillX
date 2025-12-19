@@ -13,7 +13,7 @@ export default function Navbar() {
   const userId = useUserStore((state) => state.userInfo?.userId);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-b border-zinc-200 dark:border-zinc-800">
+    <nav className="sticky top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-b border-zinc-200 dark:border-zinc-800">
       <div className="flex items-center gap-2">
         <Link href={"/"}>
           <Logo />
@@ -34,6 +34,7 @@ export default function Navbar() {
         </Link>
       ) : (
         <div className="flex gap-3 items-center">
+          <Link href={"/search"}>Search</Link>
           <Notifications />
           <ProfileDropDown />
         </div>

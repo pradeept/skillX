@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 export type Notification = {
   id: string;
   message: string;
-  createdAt: Date;
+  createdAt: string;
   read: boolean;
 };
 

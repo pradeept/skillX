@@ -1,10 +1,11 @@
-// @/context/NotificationSocketContext.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import useUserStore from "@/store/userStore";
 import useNotificationStore from "@/store/notificationStore";
+import { toast } from "sonner";
+import { Notification } from "@/types/notification";
 
 const NotificationContext = createContext<Socket | null>(null);
 
@@ -28,22 +29,52 @@ export const NotificationProvider = ({
     });
 
     socketInstance.on("connect", () => {
-      console.log("[client] Notification socket connected:", socketInstance.id);
-      setSocket(socketInstance);
+      console.log("[client] Notification socket connected");
     });
 
     socketInstance.on("verified", () => {
+      console.log(userId);
       socketInstance.emit("get_notifications", userId);
     });
 
-    socketInstance.on("notification", (newNotification) => {
-      addNotification(newNotification);
+    socketInstance.on(
+      "notification",
+      (newNotification: {
+        message: string;
+        createdAt: Date;
+        read: boolean;
+        id: string;
+      }) => {
+        const { message, createdAt, read, id } = newNotification;
+        const createdAtString = createdAt.toLocaleString();
+        addNotification({ message, createdAt: createdAtString, read, id });
+      },
+    );
+    socketInstance.off("top_notifications");
+    socketInstance.on("top_notifications", (notifications: Notification[]) => {
+      console.log(notifications);
+      notifications.forEach((notification) => {
+        const { id, message, createdAt, read } = notification;
+        const createdAtString = createdAt.toLocaleString();
+        addNotification({ id, message, createdAt: createdAtString, read });
+      });
     });
 
-    socketInstance.on("top_notifications", (notifications: any[]) => {
-      notifications.forEach((n) => addNotification(n));
+    socketInstance.on("disconnect", (reason) => {
+      console.log("[client] Notification socket disconnected:", reason);
     });
 
+    socketInstance.on("error", (res) => {
+      console.error(res.message);
+      toast.error(`Failed to fetch notifications`);
+    });
+
+    socketInstance.on("connect_error", (err) => {
+      console.error(
+        "[client] Notification socket connection error:",
+        err.message,
+      );
+    });
     // 2. Cleanup: Only runs on logout or app close
     return () => {
       console.log("[client] Disconnecting notification socket");

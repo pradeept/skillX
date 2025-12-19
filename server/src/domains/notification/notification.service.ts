@@ -64,14 +64,20 @@ export const fetchTopNotifications = async (userId: string) => {
   return notifications;
 };
 
-export const updateNotification = async (id: string) => {
+export const updateNotification = async (id: string, userId: string) => {
   // Business rules
   // 1. check if notification exists
-  const isExists = getOneNotification(id);
+  const isExists = await getOneNotification(id);
 
   if (!isExists) {
-    return new AppError("Invalid notification id", 400);
+    throw new AppError("Invalid notification id", 400);
   }
+
+  //2. check if it belongs to the current user
+  if (isExists.user_id !== userId) {
+    throw new AppError("You are not authorized to perform this task", 403);
+  }
+
   const updated = await db
     .update(Notifications)
     .set({ read: true })

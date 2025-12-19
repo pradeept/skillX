@@ -36,13 +36,14 @@ export default function NotificationCard({
     notificationMutation.mutate(id);
   };
   return (
-    <Link href={`/notification`} className="flex justify-around items-center">
-      <div
+    <div className="flex justify-around items-center">
+      <Link
+        href={`/notification`}
         className={`flex flex-col gap-1 p-2 rounded ${read ? "dark:bg-slate-900 bg-slate-50" : "dark:bg-slate-800 bg-slate-200"}`}
       >
         <p>{message}</p>
         <small className="text-start">{time}</small>
-      </div>
+      </Link>
       {!read ? (
         <Check
           size={18}
@@ -52,6 +53,6 @@ export default function NotificationCard({
       ) : (
         <CheckCheck size={18} className="dark:text-blue-300 text-blue-400" />
       )}
-    </Link>
+    </div>
   );
 }

@@ -1,28 +1,32 @@
+import { Skill } from "@/types/skill";
 import { create } from "zustand";
 
 type UserInfo = {
   userId: string;
   email: string;
-  full_name: string;
+  fullName: string;
   bio: string;
   avatar: string;
   totalLessonsTaught: number;
   totalLessonsLearned: number;
   points: number;
   level: "beginner" | "intermediate" | "advanced" | "expert";
-  token: string;
 };
+
+type UserSkill = Skill;
 
 type UserStore = {
   userInfo: UserInfo | null;
-
+  userSkills: UserSkill[];
   // actions
   setUserInfo: (user: UserInfo) => void;
   clearUserInfo: () => void;
+  setUserSkills: (skills: Skill[]) => void;
 };
 
 const useUserStore = create<UserStore>((set) => ({
   userInfo: null,
+  userSkills: [],
 
   setUserInfo: (user) =>
     set({
@@ -32,6 +36,10 @@ const useUserStore = create<UserStore>((set) => ({
   clearUserInfo: () =>
     set({
       userInfo: null,
+    }),
+  setUserSkills: (skills) =>
+    set({
+      userSkills: skills,
     }),
 }));
 

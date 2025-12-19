@@ -6,19 +6,16 @@ import { AppError } from "../../utils/AppError.ts";
 
 const UNKNOWN_CATEGORY_ID = "746b22f3-7f75-4c95-b69c-e1c4e98ff349";
 
-export const getSkill = async (
-  req: Request & { data?: any },
-  res: Response
-) => {
+export const getSkill = async (req: Request, res: Response) => {
   const { id } = req.data;
-
+  console.log("id: ", id);
   const validated = z.uuid().parse(id);
 
   const skills: {
     id: string;
-    skill_name: string;
+    skillName: string;
     category: string;
-    type: string;
+    type: "offering" | "wanting";
   }[] = await skillService.getUserSkills(validated);
   return res.status(200).json({
     status: "success",
@@ -29,7 +26,7 @@ export const getSkill = async (
 export const addOrUpdateSkill = async (
   req: Request & { data?: any },
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const data = req.data;
   const body = req.body;
@@ -48,12 +45,12 @@ export const addOrUpdateSkill = async (
         skill_id: skill.id,
         skill_name: skill.skill_name,
         type: validatedBody.type,
-      })
+      }),
     );
 
     // find new skills that needs to be added to "skills" table
     const newSkillNames = skillNames.filter(
-      (skill) => !existingSkills.map((s) => s.skill_name).includes(skill)
+      (skill) => !existingSkills.map((s) => s.skill_name).includes(skill),
     );
 
     let newSkills;
@@ -78,7 +75,7 @@ export const addOrUpdateSkill = async (
             user_id: validatedUserId,
             type: validatedBody.type,
           };
-        }
+        },
       );
     }
 
@@ -99,7 +96,7 @@ export const addOrUpdateSkill = async (
           user_id: s.user_id,
           skill_id: s.skill_id,
           type: s.type,
-        }))
+        })),
       );
     }
 
