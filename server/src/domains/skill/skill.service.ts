@@ -11,7 +11,7 @@ export const getUserSkills = async (id: string) => {
   const skills = await db
     .select({
       id: UserSkill.id,
-      skill_name: Skill.skill_name,
+      skillName: Skill.skill_name,
       category: SkillCategory.category_name,
       type: UserSkill.type, //offering or wanting
     })
@@ -19,6 +19,7 @@ export const getUserSkills = async (id: string) => {
     .innerJoin(Skill, eq(UserSkill.skill_id, Skill.id))
     .innerJoin(SkillCategory, eq(Skill.category_id, SkillCategory.id))
     .where(eq(UserSkill.user_id, id));
+
 
   return skills;
 };
@@ -39,7 +40,7 @@ export const addNewSkills = async (
     user_id: string;
     skill_name: string;
     category_id: string;
-  }[]
+  }[],
 ) => {
   const newSkills = await db.transaction(async (tx) => {
     return await tx.insert(Skill).values(skills).returning();
@@ -52,7 +53,7 @@ export const addNewUserSkill = async (
     user_id: string;
     skill_id: string;
     type: "offering" | "wanting";
-  }[]
+  }[],
 ) => {
   return await db.transaction(async (tx) => {
     return await tx

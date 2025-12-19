@@ -3,7 +3,7 @@ import "./globals.css";
 import LenisProvider from "../components/misc/LenisProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
-import QueryProvider from "./_queryProvider";
+import QueryProvider from "../providers/queryProvider";
 import { NotificationProvider } from "@/providers/notificationProvider";
 
 export const metadata: Metadata = {
