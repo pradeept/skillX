@@ -1,10 +1,7 @@
 import { type NextFunction, type Request, type Response } from "express";
 import { AppError } from "../../utils/AppError.ts";
 import * as profileService from "./profile.service.ts";
-import {
-  deleteProfileSchema,
-  updateProfileSchema,
-} from "./profile.schema.ts";
+import { deleteProfileSchema, updateProfileSchema } from "./profile.schema.ts";
 
 /*
     @Params: id
@@ -14,7 +11,7 @@ import {
 export const getProfile = async (
   req: Request & { data?: any },
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const data = req.data;
   const email = data.email;
@@ -26,8 +23,9 @@ export const getProfile = async (
     return res.status(200).json({
       status: "success",
       user: {
+        userId: user.id,
         email: user.email,
-        full_name: user.full_name,
+        fullName: user.full_name,
         bio: user.bio,
         avatar_url: user.avatar_url,
         total_lessons_learned: user.total_lessons_learned,
@@ -40,11 +38,11 @@ export const getProfile = async (
 };
 
 export const updateProfile = async (
-  req: Request & { data?: any },
+  req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-  const data = req.data;
+  const data = req.body;
 
   //zod validation
   const validatedBody = updateProfileSchema.parse(data);
@@ -71,7 +69,7 @@ export const updateProfile = async (
 
 export const deleteProfile = async (
   req: Request & { data?: any },
-  res: Response
+  res: Response,
 ) => {
   const data = req.data;
   const validatedBody = deleteProfileSchema.parse(data);

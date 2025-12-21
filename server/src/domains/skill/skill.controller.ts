@@ -23,8 +23,21 @@ export const getSkill = async (req: Request, res: Response) => {
   });
 };
 
+export const getCategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const categories = await skillService.fetchAllCategories();
+
+  return res.status(200).json({
+    status: "success",
+    categories,
+  });
+};
+
 export const addOrUpdateSkill = async (
-  req: Request & { data?: any },
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
