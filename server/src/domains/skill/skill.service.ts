@@ -20,8 +20,15 @@ export const getUserSkills = async (id: string) => {
     .innerJoin(SkillCategory, eq(Skill.category_id, SkillCategory.id))
     .where(eq(UserSkill.user_id, id));
 
-
   return skills;
+};
+
+export const fetchAllCategories = async () => {
+  const categories = await db
+    .select({ id: SkillCategory.id, categoryName: SkillCategory.category_name })
+    .from(SkillCategory);
+
+  return categories;
 };
 
 // find if a skill exists in skills table (not to confuse user_skills)

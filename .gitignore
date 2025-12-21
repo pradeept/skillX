@@ -1,4 +1,4 @@
-# server 
+# server
 server/node_modules
 server/.env
 
@@ -21,3 +21,4 @@ ui/next-env.d.ts
 
 # next.js
 ui/out/
+TODO.md
