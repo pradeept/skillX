@@ -5,13 +5,12 @@ import { verifyToken } from "../utils/jwt.ts";
 export const isAuthorized = async (
   req: Request & { data?: any },
   _: any,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { token } = req.cookies;
-  console.log("Token (authorize.ts): ", token);
   if (!token || token.length === 0) {
     return next(
-      new AppError("You are not logged in to make this request", 403)
+      new AppError("You are not logged in to make this request", 403),
     );
   }
   const cleanToken = token.replace("Bearer ", "");
@@ -22,7 +21,7 @@ export const isAuthorized = async (
     next();
   } else {
     return next(
-      new AppError("You are not logged in to make this request", 403)
+      new AppError("You are not logged in to make this request", 403),
     );
   }
 };

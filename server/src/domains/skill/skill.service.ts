@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, and } from "drizzle-orm";
 import {
   Skill,
   SkillCategory,
@@ -20,8 +20,15 @@ export const getUserSkills = async (id: string) => {
     .innerJoin(SkillCategory, eq(Skill.category_id, SkillCategory.id))
     .where(eq(UserSkill.user_id, id));
 
-
   return skills;
+};
+
+export const fetchAllCategories = async () => {
+  const categories = await db
+    .select({ id: SkillCategory.id, categoryName: SkillCategory.category_name })
+    .from(SkillCategory);
+
+  return categories;
 };
 
 // find if a skill exists in skills table (not to confuse user_skills)
@@ -60,6 +67,17 @@ export const addNewUserSkill = async (
       .insert(UserSkill)
       .values(newUserSkills)
       .onConflictDoNothing()
+      .returning();
+  });
+};
+
+export const removeUserSkill = async (userSkillId: string, userId: string) => {
+  return await db.transaction(async (tx) => {
+    return await tx
+      .delete(UserSkill)
+      .where(
+        and(eq(UserSkill.id, userSkillId), eq(UserSkill.user_id, userId)),
+      )
       .returning();
   });
 };

@@ -1,17 +1,8 @@
 import { Skill } from "@/types/skill";
+import { User } from "@/types/user";
 import { create } from "zustand";
 
-type UserInfo = {
-  userId: string;
-  email: string;
-  fullName: string;
-  bio: string;
-  avatar: string;
-  totalLessonsTaught: number;
-  totalLessonsLearned: number;
-  points: number;
-  level: "beginner" | "intermediate" | "advanced" | "expert";
-};
+type UserInfo = User;
 
 type UserSkill = Skill;
 
@@ -21,7 +12,8 @@ type UserStore = {
   // actions
   setUserInfo: (user: UserInfo) => void;
   clearUserInfo: () => void;
-  setUserSkills: (skills: Skill[]) => void;
+  setUserSkills: (skills: UserSkill[]) => void;
+  addUserSkill: (skill: UserSkill) => void;
 };
 
 const useUserStore = create<UserStore>((set) => ({
@@ -41,6 +33,10 @@ const useUserStore = create<UserStore>((set) => ({
     set({
       userSkills: skills,
     }),
+  addUserSkill: (skill) =>
+    set((state) => ({
+      userSkills: [...state.userSkills, skill],
+    })),
 }));
 
 export default useUserStore;
