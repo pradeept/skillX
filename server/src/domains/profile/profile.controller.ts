@@ -27,7 +27,7 @@ export const getProfile = async (
         email: user.email,
         fullName: user.full_name,
         bio: user.bio,
-        avatar_url: user.avatar_url,
+        avatar: user.avatar_url,
         total_lessons_learned: user.total_lessons_learned,
         total_lessons_taught: user.total_lessons_taught,
         points: user.points,

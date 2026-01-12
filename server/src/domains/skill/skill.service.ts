@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, and } from "drizzle-orm";
 import {
   Skill,
   SkillCategory,
@@ -67,6 +67,17 @@ export const addNewUserSkill = async (
       .insert(UserSkill)
       .values(newUserSkills)
       .onConflictDoNothing()
+      .returning();
+  });
+};
+
+export const removeUserSkill = async (userSkillId: string, userId: string) => {
+  return await db.transaction(async (tx) => {
+    return await tx
+      .delete(UserSkill)
+      .where(
+        and(eq(UserSkill.id, userSkillId), eq(UserSkill.user_id, userId)),
+      )
       .returning();
   });
 };

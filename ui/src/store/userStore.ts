@@ -12,7 +12,8 @@ type UserStore = {
   // actions
   setUserInfo: (user: UserInfo) => void;
   clearUserInfo: () => void;
-  setUserSkills: (skills: Skill[]) => void;
+  setUserSkills: (skills: UserSkill[]) => void;
+  addUserSkill: (skill: UserSkill) => void;
 };
 
 const useUserStore = create<UserStore>((set) => ({
@@ -32,6 +33,10 @@ const useUserStore = create<UserStore>((set) => ({
     set({
       userSkills: skills,
     }),
+  addUserSkill: (skill) =>
+    set((state) => ({
+      userSkills: [...state.userSkills, skill],
+    })),
 }));
 
 export default useUserStore;

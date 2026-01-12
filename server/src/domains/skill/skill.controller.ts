@@ -128,3 +128,40 @@ export const addOrUpdateSkill = async (
     return next(new AppError("Failed to update skills", 500));
   }
 };
+
+export const deleteSkill = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { id } = req.params;
+  const user = req.data;
+
+  // validate id
+  try {
+    const validatedId = z.uuid().parse(id);
+    const validatedUserId = z.uuid().parse(user.id);
+
+    const deletedSkill = await skillService.removeUserSkill(
+      validatedId,
+      validatedUserId,
+    );
+
+    if (deletedSkill.length === 0) {
+      return next(
+        new AppError(
+          "Skill not found or you don't have permission to delete it",
+          404,
+        ),
+      );
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Skill deleted successfully",
+    });
+  } catch (e) {
+    console.error(e);
+    return next(new AppError("Invalid ID or failed to delete skill", 400));
+  }
+};

@@ -3,6 +3,7 @@ import {
   addOrUpdateSkill,
   getCategories,
   getSkill,
+  deleteSkill,
 } from "./skill.controller.ts";
 import { isAuthorized } from "../../middlewares/authorize.ts";
 export const skillRouter = Router();
@@ -11,6 +12,10 @@ export const skillRouter = Router();
 skillRouter.get("/", isAuthorized, getSkill);
 
 skillRouter.get("/category", isAuthorized, getCategories);
+
+
+// delete skill
+skillRouter.delete("/:id", isAuthorized, deleteSkill);
 
 // add new skill
 skillRouter.post("/", isAuthorized, addOrUpdateSkill);

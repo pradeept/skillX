@@ -10,14 +10,11 @@ import { uploadToCloudinary } from "@/lib/uploadToCloudinary";
 import { User } from "@/types/user";
 import { backend } from "@/utils/axiosConfig";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { CircleX, Cross, Edit, Save } from "lucide-react";
+import { CircleX,  Edit, Save } from "lucide-react";
 import Image from "next/image";
 import {
   ChangeEvent,
-  InputEvent,
   useEffect,
-  useEffectEvent,
   useState,
 } from "react";
 import { toast } from "sonner";
@@ -27,6 +24,7 @@ export default function Profile() {
   const [form, setForm] = useState<User | null>(null);
   const [profilePic, setProfilePic] = useState<string | null>();
   const [isFormEdit, setIsFormEdit] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   // get profile
   const {
@@ -112,14 +110,16 @@ export default function Profile() {
   };
 
   const handleSubmit = async () => {
-    let updatedProfileURL =
-      "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+    setIsUploading(true);
+    let updatedProfileURL = form?.avatar || "";
     if (profilePic) {
       const formData = new FormData();
       formData.append("file", profilePic);
       const result = await uploadToCloudinary(formData);
       if (result.error) {
         toast.error("Failed to update profile picture");
+        setIsUploading(false);
+        return;
       } else {
         updatedProfileURL = result.url;
       }
@@ -133,7 +133,11 @@ export default function Profile() {
         bio: form.bio || "",
         avatarUrl: updatedProfileURL,
       };
-      updateProfileMutation.mutate(data);
+      updateProfileMutation.mutate(data, {
+        onSettled: () => setIsUploading(false),
+      });
+    } else {
+      setIsUploading(false);
     }
   };
 
@@ -159,14 +163,13 @@ export default function Profile() {
           <div className="flex flex-col gap-3 justify-center items-center">
             <Image
               src={
-                form?.avatar ||
                 profilePic ||
+                form?.avatar ||
                 "https://cdn-icons-png.flaticon.com/512/847/847969.png"
               }
               width={144}
               height={144}
               alt="user-avatar"
-              // placeholder="blur"
               className="rounded-full border"
             />
             {isFormEdit && (
@@ -222,15 +225,19 @@ export default function Profile() {
                     className="text-red-400 cursor-pointer"
                     onClick={() => setIsFormEdit(false)}
                   />
-                  <Save
-                    size={18}
-                    className="text-blue-400 cursor-pointer"
-                    onClick={handleSubmit}
-                  />
+                  {isUploading ? (
+                    <Spinner className="w-4 h-4" />
+                  ) : (
+                    <Save
+                      size={18}
+                      className="text-blue-400 cursor-pointer"
+                      onClick={handleSubmit}
+                    />
+                  )}
                 </>
               )}
             </div>
-            <SkillForm />
+            {form && <SkillForm userId={form.userId} />}
           </div>
         </div>
       </section>
