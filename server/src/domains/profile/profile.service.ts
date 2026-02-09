@@ -2,9 +2,12 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../../db/drizzle/db.ts";
 import { User } from "../../db/drizzle/schema.ts";
 import type { UserType } from "../auth/user.types.ts";
-import { findUserByEmail } from "../auth/auth.service.ts";
 
-export const getUserDetails = findUserByEmail;
+// ADD PAGINATION
+export const getAllUsers = async()=>{
+  const users = await db.select().from(User);
+  return users;
+}
 
 export const findUserById = async (id: string) => {
   const user = await db.select().from(User).where(eq(User.id, id));

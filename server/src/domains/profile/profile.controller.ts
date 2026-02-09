@@ -2,20 +2,31 @@ import { type NextFunction, type Request, type Response } from "express";
 import { AppError } from "../../utils/AppError.ts";
 import * as profileService from "./profile.service.ts";
 import { deleteProfileSchema, updateProfileSchema } from "./profile.schema.ts";
+import z from "zod";
 
-/*
-    @Params: id
-    @Params: email
-    from isAuthorized middleware
-*/
-export const getProfile = async (
-  req: Request & { data?: any },
+// USE PAGINATION
+export const getAllProfiles = async (
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const data = req.data;
-  const email = data.email;
-  const user = await profileService.getUserDetails(email);
+  const users = await profileService.getAllUsers();
+  if (users) {
+    return res.status(200).json({
+      status: "success",
+      users,
+    });
+  }
+};
+
+export const getProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.data.id;
+
+  const user = await profileService.findUserById(userId);
 
   if (!user) {
     return next(new AppError("User not found", 404));

@@ -7,16 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadToCloudinary } from "@/lib/uploadToCloudinary";
+import useUserStore from "@/store/userStore";
 import { User } from "@/types/user";
 import { backend } from "@/utils/axiosConfig";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleX,  Edit, Save } from "lucide-react";
+import { CircleX, Edit, Save } from "lucide-react";
 import Image from "next/image";
-import {
-  ChangeEvent,
-  useEffect,
-  useState,
-} from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function Profile() {
@@ -35,7 +32,7 @@ export default function Profile() {
   } = useQuery({
     queryKey: ["profile"],
     queryFn: () => {
-      return backend.get("/profile");
+      return backend.get(`/profile/me`);
     },
     select: (data) => ({
       user: data.data.user,
@@ -151,16 +148,16 @@ export default function Profile() {
   if (isError) {
     return (
       <div>
-        <Label className="text-red-400">{error.message}</Label>
+        <Label className='text-red-400'>{error.message}</Label>
       </div>
     );
   }
   return (
     <>
       <Navbar />
-      <section className="">
-        <div className="flex flex-col md:p-3 p-1 justify-center items-center gap-2 mt-10 border">
-          <div className="flex flex-col gap-3 justify-center items-center">
+      <section className=''>
+        <div className='flex flex-col md:p-3 p-1 justify-center items-center gap-2 mt-10 border'>
+          <div className='flex flex-col gap-3 justify-center items-center'>
             <Image
               src={
                 profilePic ||
@@ -169,24 +166,24 @@ export default function Profile() {
               }
               width={144}
               height={144}
-              alt="user-avatar"
-              className="rounded-full border"
+              alt='user-avatar'
+              className='rounded-full border'
             />
             {isFormEdit && (
               <Input
-                type="file"
-                name="avatar"
-                className="max-w-md"
-                accept="image/*"
+                type='file'
+                name='avatar'
+                className='max-w-md'
+                accept='image/*'
                 onChange={handleImageUpdate}
               />
             )}
           </div>
-          <div className="flex flex-col w-full max-w-md p-3 gap-4">
+          <div className='flex flex-col w-full max-w-md p-3 gap-4'>
             <Input
-              type="text"
-              placeholder="Fullname"
-              name="fullName"
+              type='text'
+              placeholder='Fullname'
+              name='fullName'
               value={form?.fullName || ""}
               onChange={handleChange}
               disabled={!isFormEdit}
@@ -194,9 +191,9 @@ export default function Profile() {
             />
 
             <Input
-              type="email"
-              placeholder="Email"
-              name="email"
+              type='email'
+              placeholder='Email'
+              name='email'
               value={form?.email || ""}
               onChange={handleChange}
               disabled={!isFormEdit}
@@ -204,15 +201,15 @@ export default function Profile() {
             />
 
             <Textarea
-              placeholder="Bio"
-              name="bio"
+              placeholder='Bio'
+              name='bio'
               value={(form && form.bio) || ""}
               onChange={handleChange}
-              className="border rounded"
+              className='border rounded'
               disabled={!isFormEdit}
               required
             />
-            <div className="flex justify-end gap-3">
+            <div className='flex justify-end gap-3'>
               <Edit
                 size={18}
                 onClick={handleProfileEdit}
@@ -222,15 +219,15 @@ export default function Profile() {
                 <>
                   <CircleX
                     size={18}
-                    className="text-red-400 cursor-pointer"
+                    className='text-red-400 cursor-pointer'
                     onClick={() => setIsFormEdit(false)}
                   />
                   {isUploading ? (
-                    <Spinner className="w-4 h-4" />
+                    <Spinner className='w-4 h-4' />
                   ) : (
                     <Save
                       size={18}
-                      className="text-blue-400 cursor-pointer"
+                      className='text-blue-400 cursor-pointer'
                       onClick={handleSubmit}
                     />
                   )}
