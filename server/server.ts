@@ -13,6 +13,7 @@ import { sessionRouter } from "./src/domains/session/session.routes.ts";
 import { videoMeetRouter } from "./src/domains/video-meet/videoMeet.routes.ts";
 import cors from "cors";
 import { notificationRouter } from "./src/domains/notification/notification.routes.ts";
+import { searchRouter } from "./src/domains/search/search.routes.ts";
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use("/api/skill", skillRouter);
 app.use("/api/session-request", sessionRequestRouter);
 app.use("/api/session", sessionRouter);
 app.use("/api/video", videoMeetRouter);
+app.use("/api/search", searchRouter)
 
 app.use(errorHandler); //error handler
 

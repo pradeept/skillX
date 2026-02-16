@@ -66,6 +66,7 @@ export const updateProfile = async (
     const updatedUser = await profileService.updateUserDetails({
       id: validatedBody.id,
       full_name: validatedBody.fullName,
+      email: validatedBody.email,
       bio: validatedBody.bio,
       avatar_url: validatedBody.avatarUrl,
     });
