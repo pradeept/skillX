@@ -12,24 +12,6 @@ export const getProfilesCount = async () => {
   return usersCount[0].totalCount;
 };
 
-// id: uuid().primaryKey().defaultRandom(),
-//   full_name: varchar({ length: 50 }).notNull(),
-//   email: varchar({ length: 100 }).notNull().unique(),
-//   password_hash: varchar({ length: 255 }).notNull(),
-//   bio: varchar({ length: 200 }),
-//   avatar_url: varchar({ length: 255 }).default(
-//     "https://cdn-icons-png.flaticon.com/512/847/847969.png",
-//   ),
-
-//   // score
-//   total_lessons_taught: integer().default(0),
-//   total_lessons_learned: integer().default(0),
-//   points: smallint().default(50).notNull(),
-//   level: levelsEnum("level").default("beginner").notNull(),
-
-//   // account
-//   account_status: accountStatusEnum("account_status").default("active"),
-
 export const getProfilesByLevel = async (
   pageSize: number,
   offset: number,
@@ -65,7 +47,9 @@ export const findByName = async (
       level: User.level,
     })
     .from(User)
-    .where(ilike(User.full_name, `${name}%`))
+    .where(
+      and(ilike(User.full_name, `${name}%`), eq(User.account_status, "active")),
+    )
     .offset(offset)
     .limit(pageSize);
 
