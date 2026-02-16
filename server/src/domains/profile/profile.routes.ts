@@ -9,7 +9,7 @@ import { isAuthorized } from "../../middlewares/authorize.ts";
 
 export const profileRouter = Router();
 
-profileRouter.get("/", isAuthorized, getAllProfiles);
+// profileRouter.get("/", isAuthorized, getAllProfiles);
 
 profileRouter.get("/me", isAuthorized, getProfile);
 

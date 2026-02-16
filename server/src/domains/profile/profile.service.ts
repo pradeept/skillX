@@ -4,10 +4,10 @@ import { User } from "../../db/drizzle/schema.ts";
 import type { UserType } from "../auth/user.types.ts";
 
 // ADD PAGINATION
-export const getAllUsers = async()=>{
+export const getAllUsers = async () => {
   const users = await db.select().from(User);
   return users;
-}
+};
 
 export const findUserById = async (id: string) => {
   const user = await db.select().from(User).where(eq(User.id, id));
@@ -20,12 +20,13 @@ export const findUserById = async (id: string) => {
 };
 
 export const updateUserDetails = async (data: Partial<UserType>) => {
-  const { id, full_name, bio, avatar_url } = data;
+  const { id, full_name, bio, avatar_url, email } = data;
   const updatedUser = await db
     .update(User)
     .set({
       full_name,
       bio,
+      email,
       avatar_url,
       updated_at: sql`now()`,
     })
